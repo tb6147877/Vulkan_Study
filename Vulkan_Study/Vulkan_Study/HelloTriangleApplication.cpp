@@ -39,6 +39,7 @@ void HelloTriangleApplication::initWindow() {
 void HelloTriangleApplication::initVulkan() {
 	createInstance();
 	setupDebugMessenger();
+	createSurface();
 	pickPhysicalDevice();
 	createLogicalDevice();
 }
@@ -71,21 +72,27 @@ void HelloTriangleApplication::pickPhysicalDevice() {
 void HelloTriangleApplication::createLogicalDevice() {
 	QueueFamilyIndices indices = findQueueFamilies(physicalDevice);
 
-	VkDeviceQueueCreateInfo queueCreateInfo{};
-	queueCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
-	queueCreateInfo.queueFamilyIndex = indices.graphicsFamily.value();
-	queueCreateInfo.queueCount = 1;//一个就够了，因为可以多线程提交
+	std::vector<VkDeviceQueueCreateInfo> queueCreateInfos;
+	std::set<uint32_t> uniqueQueueFamilies = { indices.graphicsFamily.value(), indices.presentFamily.value() };
 
 	float queuePriority = 1.0f;
-	queueCreateInfo.pQueuePriorities = &queuePriority;
+	for (uint32_t queueFamily : uniqueQueueFamilies) {
+		VkDeviceQueueCreateInfo queueCreateInfo{};
+		queueCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
+		queueCreateInfo.queueFamilyIndex = queueFamily;
+		queueCreateInfo.queueCount = 1;
+		queueCreateInfo.pQueuePriorities = &queuePriority;
+		queueCreateInfos.push_back(queueCreateInfo);
+	}
 
 	VkPhysicalDeviceFeatures deviceFeatures{};
 
 	VkDeviceCreateInfo createInfo{};
 	createInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
 
-	createInfo.pQueueCreateInfos = &queueCreateInfo;
-	createInfo.queueCreateInfoCount = 1;
+	createInfo.queueCreateInfoCount = static_cast<uint32_t>(queueCreateInfos.size());
+	createInfo.pQueueCreateInfos = queueCreateInfos.data();
+
 	createInfo.pEnabledFeatures = &deviceFeatures;
 	createInfo.enabledExtensionCount = 0;
 
@@ -102,6 +109,29 @@ void HelloTriangleApplication::createLogicalDevice() {
 	}
 
 	vkGetDeviceQueue(device, indices.graphicsFamily.value(), 0, &graphicsQueue);
+	vkGetDeviceQueue(device, indices.presentFamily.value(), 0, &presentQueue);
+}
+
+void HelloTriangleApplication::createSurface() {
+	if (glfwCreateWindowSurface(instance, window, nullptr, &surface) != VK_SUCCESS) {
+		throw std::runtime_error("failed to create window surface!");
+	}
+}
+
+bool HelloTriangleApplication::checkDeviceExtensionSupport(VkPhysicalDevice device) {
+	uint32_t extensionCount;
+	vkEnumerateDeviceExtensionProperties(device, nullptr, &extensionCount, nullptr);
+
+	std::vector<VkExtensionProperties> availableExtensions(extensionCount);
+	vkEnumerateDeviceExtensionProperties(device, nullptr, &extensionCount, availableExtensions.data());
+
+	std::set<std::string> requiredExtensions(deviceExtensions.begin(), deviceExtensions.end());
+
+	for (const auto& extension : availableExtensions) {
+		requiredExtensions.erase(extension.extensionName);
+	}
+
+	return requiredExtensions.empty();
 }
 
 
@@ -109,7 +139,10 @@ void HelloTriangleApplication::createLogicalDevice() {
 bool HelloTriangleApplication::isDeviceSuitable(VkPhysicalDevice device) {
 	QueueFamilyIndices indices = findQueueFamilies(device);
 
-	return indices.isComplete();
+	bool extensionsSupported = checkDeviceExtensionSupport(device);
+
+
+	return indices.isComplete()&&extensionsSupported;
 }
 
 QueueFamilyIndices HelloTriangleApplication::findQueueFamilies(VkPhysicalDevice device) {
@@ -128,9 +161,18 @@ QueueFamilyIndices HelloTriangleApplication::findQueueFamilies(VkPhysicalDevice 
 			indices.graphicsFamily = i;
 		}
 
+		VkBool32 presentSupport = false;
+		vkGetPhysicalDeviceSurfaceSupportKHR(device, i, surface, &presentSupport);
+
+		if (presentSupport) {
+			indices.presentFamily = i;
+		}
+
 		if (indices.isComplete()) {
 			break;
 		}
+
+		
 
 		i++;
 	}
@@ -151,6 +193,7 @@ void HelloTriangleApplication::cleanup() {
 		DestroyDebugUtilsMessengerEXT(instance, debugMessenger, nullptr);
 	}
 
+	vkDestroySurfaceKHR(instance, surface, nullptr);
 	vkDestroyInstance(instance, nullptr);
 	glfwDestroyWindow(window);
 	glfwTerminate();
@@ -228,7 +271,7 @@ void HelloTriangleApplication::createInstance() {
 	//使用glfw给Vulkan提供一个窗口系统的接口
 	auto extensions = getRequiredExtensions();
 	createInfo.enabledExtensionCount =static_cast<uint32_t>(extensions.size());
-	createInfo.ppEnabledExtensionNames = extensions.data();
+	createInfo.ppEnabledExtensionNames = extensions.data();//开启所有这些支持的extension
 
 	if (enableValidationLayers) {
 		createInfo.enabledLayerCount = static_cast<uint32_t>(validationLayers.size());

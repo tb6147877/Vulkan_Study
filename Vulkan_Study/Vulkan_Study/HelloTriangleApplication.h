@@ -8,6 +8,7 @@
 #include <vector>
 #include <optional>
 #include <set>
+#include <algorithm>
 
 //在debug模式开启ValidationLayers，在发布模式关闭
 #ifdef NDEBUG
@@ -24,6 +25,13 @@ struct QueueFamilyIndices {
 	bool isComplete() {
 		return graphicsFamily.has_value()&&presentFamily.has_value();
 	}
+};
+
+//用来描述swapchain
+struct SwapChainSupportDetails {
+	VkSurfaceCapabilitiesKHR capabilities;//surface的基础功能（swap chain中的图片数量和大小）
+	std::vector<VkSurfaceFormatKHR> formats;//surface中图片的格式和颜色空间
+	std::vector<VkPresentModeKHR> presentModes;//可用的表现模式
 };
 
 
@@ -49,6 +57,12 @@ private:
 
 	VkQueue graphicsQueue;//图形queue，跟随device自动创建
 	VkQueue presentQueue;//显示queue
+
+	VkSwapchainKHR swapChain;//swap chain对象
+	std::vector<VkImage> swapChainImages;//swap chain中的图片
+	VkFormat swapChainImageFormat;//swap chain中的图片格式
+	VkExtent2D swapChainExtent;//swap chain中图片的分辨率
+
 
 
 	//glfw初始化窗口
@@ -88,7 +102,7 @@ private:
 	//检查device是否适配
 	bool isDeviceSuitable(VkPhysicalDevice device);
 
-	//创建物理device和找到合适的Queue Family
+	//通过物理device找到合适的Queue Family
 	QueueFamilyIndices findQueueFamilies(VkPhysicalDevice device);
 
 	//创建逻辑device和queue
@@ -99,4 +113,20 @@ private:
 
 	//检查PhysicalDevice是否支持extension
 	bool checkDeviceExtensionSupport(VkPhysicalDevice device);
+
+	//获取swap chain支持
+	SwapChainSupportDetails querySwapChainSupport(VkPhysicalDevice device);
+
+	//选择swap chain的属性，像素格式和颜色空间
+	VkSurfaceFormatKHR chooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats);
+
+	//选择swap chain的执行模式，就是swap chain中几张图片的交换方式
+	VkPresentModeKHR chooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes);
+
+	//选择swap chain的分辨率
+	VkExtent2D chooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities);
+
+	//正式创建一个swap chain
+	void createSwapChain();
+
 };

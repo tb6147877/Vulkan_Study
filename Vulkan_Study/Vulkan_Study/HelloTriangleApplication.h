@@ -63,6 +63,8 @@ private:
 	VkFormat swapChainImageFormat;//swap chain中的图片格式
 	VkExtent2D swapChainExtent;//swap chain中图片的分辨率
 
+	std::vector<VkImageView> swapChainImageViews;//VkImageView是VkImage在渲染流水线中的代理
+
 
 
 	//glfw初始化窗口
@@ -129,4 +131,6 @@ private:
 	//正式创建一个swap chain
 	void createSwapChain();
 
+	//创建swap chain中要使用的VkImageView
+	void createImageViews();
 };

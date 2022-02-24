@@ -9,6 +9,7 @@
 #include <optional>
 #include <set>
 #include <algorithm>
+#include <fstream>
 
 //在debug模式开启ValidationLayers，在发布模式关闭
 #ifdef NDEBUG
@@ -64,7 +65,7 @@ private:
 	VkExtent2D swapChainExtent;//swap chain中图片的分辨率
 
 	std::vector<VkImageView> swapChainImageViews;//VkImageView是VkImage在渲染流水线中的代理
-
+	VkPipelineLayout pipelineLayout;//功能类似于uniform变量，渲染时往shader传参
 
 
 	//glfw初始化窗口
@@ -97,6 +98,8 @@ private:
 
 
 	void populateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT& createInfo);
+
+	static std::vector<char> readFile(const std::string& filename);
 
 	//选择物理显卡硬件
 	void pickPhysicalDevice();
@@ -133,4 +136,10 @@ private:
 
 	//创建swap chain中要使用的VkImageView
 	void createImageViews();
+
+	//创建一个渲染流水线
+	void createGraphicsPipeline();
+
+	//创建一个shader
+	VkShaderModule createShaderModule(const std::vector<char>& code);
 };

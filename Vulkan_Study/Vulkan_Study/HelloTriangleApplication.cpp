@@ -44,6 +44,7 @@ void HelloTriangleApplication::initVulkan() {
 	createLogicalDevice();
 	createSwapChain();
 	createImageViews();
+	createRenderPass();
 	createGraphicsPipeline();
 }
 
@@ -407,6 +408,30 @@ void HelloTriangleApplication::createGraphicsPipeline() {
 		throw std::runtime_error("failed to create pipeline layout!");
 	}
 
+	//创建pipeline
+	VkGraphicsPipelineCreateInfo pipelineInfo{};
+	pipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
+	pipelineInfo.stageCount = 2;//vs和fs两个stage
+	pipelineInfo.pStages = shaderStages;
+	pipelineInfo.pVertexInputState = &vertexInputInfo;
+	pipelineInfo.pInputAssemblyState = &inputAssembly;
+	pipelineInfo.pViewportState = &viewportState;
+	pipelineInfo.pRasterizationState = &rasterizer;
+	pipelineInfo.pMultisampleState = &multisampling;
+	pipelineInfo.pColorBlendState = &colorBlending;
+	pipelineInfo.layout = pipelineLayout;
+	pipelineInfo.renderPass = renderPass;
+	pipelineInfo.subpass = 0;//subpass的index
+
+	//这两个字段用于从一个现有的pipeline中快速创建一个新pipeline，用于改动不大的情况
+	pipelineInfo.basePipelineHandle = VK_NULL_HANDLE;
+	pipelineInfo.basePipelineIndex = -1;
+
+	//这个函数可以一次性创建多个pipeline
+	if (vkCreateGraphicsPipelines(device, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &graphicsPipeline) != VK_SUCCESS) {
+		throw std::runtime_error("failed to create graphics pipeline!");
+	}
+
 	vkDestroyShaderModule(device, fragShaderModule, nullptr);
 	vkDestroyShaderModule(device, vertShaderModule, nullptr);
 }
@@ -424,6 +449,42 @@ VkShaderModule HelloTriangleApplication::createShaderModule(const std::vector<ch
 	}
 
 	return shaderModule;
+}
+
+
+void HelloTriangleApplication::createRenderPass() {
+	VkAttachmentDescription colorAttachment{};
+	colorAttachment.format = swapChainImageFormat;//这个必须和swap chain一致
+	colorAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
+	colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;//插槽中的数据在渲染前怎么处理，应用于颜色和depth插槽
+	colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;//插槽中的数据在渲染后怎么处理，应用于颜色和depth插槽
+	colorAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;//插槽中的数据在渲染前怎么处理，应用于stencil插槽
+	colorAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;//插槽中的数据在渲染后怎么处理，应用于stencil插槽
+	colorAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;//表示这个图在渲染前从哪来，这里反正我们都要清掉数据，所以不在乎从哪里来
+	colorAttachment.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;//表示这个图渲染后要去哪，这里是要去swap chain
+
+	//每个subpass都引用着一个或多个插槽
+	VkAttachmentReference colorAttachmentRef{};
+	colorAttachmentRef.attachment = 0;//在插槽数组中索引是0
+	colorAttachmentRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;//插槽的用途是颜色
+
+	//用于描述subpass，这里我们只有一个subpass
+	VkSubpassDescription subpass{};
+	subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;//表明这是一个图形subpass
+	subpass.colorAttachmentCount = 1;
+	subpass.pColorAttachments = &colorAttachmentRef;//fragment shader中layout(location = 0) out vec4 outColor
+
+	//创建render pass
+	VkRenderPassCreateInfo renderPassInfo{};
+	renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
+	renderPassInfo.attachmentCount = 1;
+	renderPassInfo.pAttachments = &colorAttachment;
+	renderPassInfo.subpassCount = 1;
+	renderPassInfo.pSubpasses = &subpass;
+
+	if (vkCreateRenderPass(device, &renderPassInfo, nullptr, &renderPass) != VK_SUCCESS) {
+		throw std::runtime_error("failed to create render pass!");
+	}
 }
 
 
@@ -483,7 +544,9 @@ void HelloTriangleApplication::mainLoop() {
 }
 
 void HelloTriangleApplication::cleanup() {
+	vkDestroyPipeline(device, graphicsPipeline, nullptr);
 	vkDestroyPipelineLayout(device, pipelineLayout, nullptr);
+	vkDestroyRenderPass(device, renderPass, nullptr);
 
 	for (auto imageView : swapChainImageViews) {
 		vkDestroyImageView(device, imageView, nullptr);

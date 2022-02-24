@@ -63,9 +63,11 @@ private:
 	std::vector<VkImage> swapChainImages;//swap chain中的图片
 	VkFormat swapChainImageFormat;//swap chain中的图片格式
 	VkExtent2D swapChainExtent;//swap chain中图片的分辨率
-
 	std::vector<VkImageView> swapChainImageViews;//VkImageView是VkImage在渲染流水线中的代理
+
 	VkPipelineLayout pipelineLayout;//功能类似于uniform变量，渲染时往shader传参
+	VkRenderPass renderPass;//一个render pass
+	VkPipeline graphicsPipeline;//一个完整的渲染流水线
 
 
 	//glfw初始化窗口
@@ -142,4 +144,7 @@ private:
 
 	//创建一个shader
 	VkShaderModule createShaderModule(const std::vector<char>& code);
+
+	//创建render pass
+	void createRenderPass();
 };

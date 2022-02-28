@@ -46,6 +46,8 @@ void HelloTriangleApplication::initVulkan() {
 	createImageViews();
 	createRenderPass();
 	createGraphicsPipeline();
+	createFramebuffers();
+	createCommandPool();
 }
 
 void HelloTriangleApplication::pickPhysicalDevice() {
@@ -488,6 +490,94 @@ void HelloTriangleApplication::createRenderPass() {
 }
 
 
+void HelloTriangleApplication::createFramebuffers() {
+	swapChainFramebuffers.resize(swapChainImageViews.size());
+
+	for (size_t i = 0; i < swapChainImageViews.size(); i++) {
+		VkImageView attachments[] = {
+			swapChainImageViews[i]
+		};
+
+		VkFramebufferCreateInfo framebufferInfo{};
+		framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
+		framebufferInfo.renderPass = renderPass;
+		framebufferInfo.attachmentCount = 1;
+		framebufferInfo.pAttachments = attachments;
+		framebufferInfo.width = swapChainExtent.width;
+		framebufferInfo.height = swapChainExtent.height;
+		framebufferInfo.layers = 1;
+
+		if (vkCreateFramebuffer(device, &framebufferInfo, nullptr, &swapChainFramebuffers[i]) != VK_SUCCESS) {
+			throw std::runtime_error("failed to create framebuffer!");
+		}
+	}
+}
+
+
+void HelloTriangleApplication::createCommandPool() {
+	QueueFamilyIndices queueFamilyIndices = findQueueFamilies(physicalDevice);
+
+	VkCommandPoolCreateInfo poolInfo{};
+	poolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
+	poolInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;//只记录command buffer一次，然后每帧执行它们；VK_COMMAND_POOL_CREATE_TRANSIENT_BIT是每次都创建新的（包含内存分配操作）
+	poolInfo.queueFamilyIndex = queueFamilyIndices.graphicsFamily.value();
+
+	if (vkCreateCommandPool(device, &poolInfo, nullptr, &commandPool) != VK_SUCCESS) {
+		throw std::runtime_error("failed to create command pool!");
+	}
+}
+
+
+void HelloTriangleApplication::createCommandBuffers() {
+	VkCommandBufferAllocateInfo allocInfo{};//cmd buf创建的相关信息
+	allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+	allocInfo.commandPool = commandPool;
+	allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;//PRIMARY是可以被可以被提交到queue，但是不能被其他cmd buf调用；SECONDARY不可以被提交到queue，但是可以被PRIMARY调用，在通用操作复用时比较有用
+	allocInfo.commandBufferCount = 1;
+
+	if (vkAllocateCommandBuffers(device, &allocInfo, &commandBuffer) != VK_SUCCESS) {
+		throw std::runtime_error("failed to allocate command buffers!");
+	}
+}
+
+void HelloTriangleApplication::recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t imageIndex) {
+	VkCommandBufferBeginInfo beginInfo{};//用于一个cmd buf正式开始的结构
+	beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+	beginInfo.flags = 0;//这个用于指定我们要怎么使用这个cmd buf
+	beginInfo.pInheritanceInfo = nullptr;//这个用于secondary cmd指定从primary cmd继承的状态
+
+	if (vkBeginCommandBuffer(commandBuffer, &beginInfo) != VK_SUCCESS) {//vkBeginCommandBuffer()这个函数的调用将会重置这个cmd buf
+		throw std::runtime_error("failed to begin recording command buffer!");
+	}
+
+	VkRenderPassBeginInfo renderPassInfo{};//用于一个render pass正式开始的结构
+	renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+	renderPassInfo.renderPass = renderPass;//这个render pass
+	renderPassInfo.framebuffer = swapChainFramebuffers[imageIndex];//其绑定的FBO
+	renderPassInfo.renderArea.offset = { 0, 0 };//渲染区域
+	renderPassInfo.renderArea.extent = swapChainExtent;
+
+	VkClearValue clearColor = { {{0.0f, 0.0f, 0.0f, 1.0f}} };//clear value
+	renderPassInfo.clearValueCount = 1;
+	renderPassInfo.pClearValues = &clearColor;
+
+	//正式开始render pass，往里面添加指令
+	//INLINE代表只执行primary cmd，没有secondary cmd
+	//SECONDARY代表执行secondary cmd
+	vkCmdBeginRenderPass(commandBuffer, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
+
+		vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline);//GRAPHICS代表图形流水线
+
+		vkCmdDraw(commandBuffer, 3, 1, 0, 0);//顶点数量，instance数量，第一个顶点的偏移，第一个instance的偏移
+
+	vkCmdEndRenderPass(commandBuffer);//render pass结束
+
+	if (vkEndCommandBuffer(commandBuffer) != VK_SUCCESS) {//创建cmd buf
+		throw std::runtime_error("failed to record command buffer!");
+	}
+}
+
+
 
 bool HelloTriangleApplication::isDeviceSuitable(VkPhysicalDevice device) {
 	QueueFamilyIndices indices = findQueueFamilies(device);
@@ -544,6 +634,14 @@ void HelloTriangleApplication::mainLoop() {
 }
 
 void HelloTriangleApplication::cleanup() {
+	vkDestroyCommandPool(device, commandPool, nullptr);
+
+
+	for (auto framebuffer : swapChainFramebuffers) {
+		vkDestroyFramebuffer(device, framebuffer, nullptr);
+	}
+
+
 	vkDestroyPipeline(device, graphicsPipeline, nullptr);
 	vkDestroyPipelineLayout(device, pipelineLayout, nullptr);
 	vkDestroyRenderPass(device, renderPass, nullptr);

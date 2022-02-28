@@ -69,6 +69,12 @@ private:
 	VkRenderPass renderPass;//一个render pass
 	VkPipeline graphicsPipeline;//一个完整的渲染流水线
 
+	std::vector<VkFramebuffer> swapChainFramebuffers;//我们要为swap chain中每张图都创建一个FBO
+
+	VkCommandPool commandPool;//用于管理cmdbuf的内存
+	VkCommandBuffer commandBuffer;//cmdbuf的列表
+
+
 
 	//glfw初始化窗口
 	void initWindow();
@@ -147,4 +153,16 @@ private:
 
 	//创建render pass
 	void createRenderPass();
+
+	//创建fbo
+	void createFramebuffers();
+
+	//创建cmd pool，用于管理cmdbuf的内存
+	void createCommandPool();
+
+	//创建cmdbuf，cmdbuf随cmd pool释放，不用显式clean
+	void createCommandBuffers();
+
+	//记录cmd buf
+	void recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t imageIndex);
 };

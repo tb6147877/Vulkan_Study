@@ -72,7 +72,12 @@ private:
 	std::vector<VkFramebuffer> swapChainFramebuffers;//我们要为swap chain中每张图都创建一个FBO
 
 	VkCommandPool commandPool;//用于管理cmdbuf的内存
-	VkCommandBuffer commandBuffer;//cmdbuf的列表
+	VkCommandBuffer commandBuffer;//cmdbuf
+
+	//用于线程同步的工具
+	VkSemaphore imageAvailableSemaphores;//表明这个图可以准备好被渲染了
+	VkSemaphore renderFinishedSemaphores;//表明这个图渲染好了可以被显示了
+	VkFence inFlightFence;
 
 
 
@@ -165,4 +170,10 @@ private:
 
 	//记录cmd buf
 	void recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t imageIndex);
+
+	//画这一帧
+	void drawFrame();
+
+	//创建信号量
+	void createSyncObjects();
 };

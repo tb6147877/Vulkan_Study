@@ -48,6 +48,8 @@ void HelloTriangleApplication::initVulkan() {
 	createGraphicsPipeline();
 	createFramebuffers();
 	createCommandPool();
+	createCommandBuffers();
+	createSyncObjects();
 }
 
 void HelloTriangleApplication::pickPhysicalDevice() {
@@ -476,6 +478,16 @@ void HelloTriangleApplication::createRenderPass() {
 	subpass.colorAttachmentCount = 1;
 	subpass.pColorAttachments = &colorAttachmentRef;//fragment shader中layout(location = 0) out vec4 outColor
 
+	//subpass用于处理render pass中fbo的插槽图片的传输问题
+	VkSubpassDependency dependency{};
+	dependency.srcSubpass = VK_SUBPASS_EXTERNAL;//出现在src指在render pass前的一个隐式subpass
+	dependency.dstSubpass = 0;//dstSubpass要比srcSubpass大，以防出现循环引用，当然其中一个如果是VK_SUBPASS_EXTERNAL就没事；出现在dst指在render pass后的一个隐式subpass
+	dependency.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;//等到swap chain读取完再进入subpass fbo传输
+	dependency.srcAccessMask = 0;
+	dependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;//等到swap chain写完再进入subpass fbo传输
+	dependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+
+
 	//创建render pass
 	VkRenderPassCreateInfo renderPassInfo{};
 	renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
@@ -483,6 +495,8 @@ void HelloTriangleApplication::createRenderPass() {
 	renderPassInfo.pAttachments = &colorAttachment;
 	renderPassInfo.subpassCount = 1;
 	renderPassInfo.pSubpasses = &subpass;
+	renderPassInfo.dependencyCount = 1;
+	renderPassInfo.pDependencies = &dependency;
 
 	if (vkCreateRenderPass(device, &renderPassInfo, nullptr, &renderPass) != VK_SUCCESS) {
 		throw std::runtime_error("failed to create render pass!");
@@ -538,6 +552,7 @@ void HelloTriangleApplication::createCommandBuffers() {
 	if (vkAllocateCommandBuffers(device, &allocInfo, &commandBuffer) != VK_SUCCESS) {
 		throw std::runtime_error("failed to allocate command buffers!");
 	}
+
 }
 
 void HelloTriangleApplication::recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t imageIndex) {
@@ -574,6 +589,73 @@ void HelloTriangleApplication::recordCommandBuffer(VkCommandBuffer commandBuffer
 
 	if (vkEndCommandBuffer(commandBuffer) != VK_SUCCESS) {//创建cmd buf
 		throw std::runtime_error("failed to record command buffer!");
+	}
+}
+
+//执行三个操作：从swap chain拿一张图；在FBO绑定的插槽图片上执行cmd buf；将图片返回swap chain用于显示
+//这些操作事实上全部是异步执行的，但是为了获得正确的结果它们需要被同步，可以用fences和semaphores实现
+//fences主要用于使用渲染操作同步应用程序；semaphores用于在cmd queue之内或跨cmd queue同步操作
+void HelloTriangleApplication::drawFrame() {
+	vkWaitForFences(device, 1, &inFlightFence, VK_TRUE, UINT64_MAX);
+	vkResetFences(device, 1, &inFlightFence);
+
+	uint32_t imageIndex;
+	vkAcquireNextImageKHR(device, swapChain, UINT64_MAX, imageAvailableSemaphores, VK_NULL_HANDLE, &imageIndex);
+
+	vkResetCommandBuffer(commandBuffer, /*VkCommandBufferResetFlagBits*/ 0);
+	recordCommandBuffer(commandBuffer, imageIndex);
+
+
+	VkSubmitInfo submitInfo{};//用于描述queue的提交和同步
+	submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+
+	VkSemaphore waitSemaphores[] = { imageAvailableSemaphores };
+	VkPipelineStageFlags waitStages[] = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };//信号量等到的渲染流水线阶段
+	submitInfo.waitSemaphoreCount = 1;
+	submitInfo.pWaitSemaphores = waitSemaphores;//指定执行前的等待
+	submitInfo.pWaitDstStageMask = waitStages;
+
+	submitInfo.commandBufferCount = 1;
+	submitInfo.pCommandBuffers = &commandBuffer;
+
+	VkSemaphore signalSemaphores[] = { renderFinishedSemaphores };
+	submitInfo.signalSemaphoreCount = 1;
+	submitInfo.pSignalSemaphores = signalSemaphores;//指定执行后的等待
+
+	//将cmd buf提交到graphics queue
+	if (vkQueueSubmit(graphicsQueue, 1, &submitInfo, inFlightFence) != VK_SUCCESS) {
+		throw std::runtime_error("failed to submit draw command buffer!");
+	}
+
+	VkPresentInfoKHR presentInfo{};
+	presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
+
+	presentInfo.waitSemaphoreCount = 1;
+	presentInfo.pWaitSemaphores = signalSemaphores;
+
+	VkSwapchainKHR swapChains[] = { swapChain };
+	presentInfo.swapchainCount = 1;
+	presentInfo.pSwapchains = swapChains;
+
+	presentInfo.pImageIndices = &imageIndex;
+	presentInfo.pResults = nullptr;//可以指定N个VkResult来检查多个swap chain的结果
+
+	vkQueuePresentKHR(presentQueue, &presentInfo);//向swap chain提交一个显示请求
+}
+
+
+void HelloTriangleApplication::createSyncObjects() {
+	VkSemaphoreCreateInfo semaphoreInfo{};
+	semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+
+	VkFenceCreateInfo fenceInfo{};
+	fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+	fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
+
+	if (vkCreateSemaphore(device, &semaphoreInfo, nullptr, &imageAvailableSemaphores) != VK_SUCCESS ||
+		vkCreateSemaphore(device, &semaphoreInfo, nullptr, &renderFinishedSemaphores) != VK_SUCCESS ||
+		vkCreateFence(device, &fenceInfo, nullptr, &inFlightFence) != VK_SUCCESS) {
+		throw std::runtime_error("failed to create synchronization objects for a frame!");
 	}
 }
 
@@ -630,10 +712,19 @@ QueueFamilyIndices HelloTriangleApplication::findQueueFamilies(VkPhysicalDevice 
 void HelloTriangleApplication::mainLoop() {
 	while (!glfwWindowShouldClose(window)) {
 		glfwPollEvents();
+		drawFrame();
 	}
+
+	//由于是异步执行，怕释放资源时候还是有渲染任务在进行
+	vkDeviceWaitIdle(device);
 }
 
 void HelloTriangleApplication::cleanup() {
+	vkDestroySemaphore(device, renderFinishedSemaphores, nullptr);
+	vkDestroySemaphore(device, imageAvailableSemaphores, nullptr);
+	vkDestroyFence(device, inFlightFence, nullptr);
+
+
 	vkDestroyCommandPool(device, commandPool, nullptr);
 
 

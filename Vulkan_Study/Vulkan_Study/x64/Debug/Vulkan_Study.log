@@ -1,3 +1,2 @@
-﻿  HelloTriangleApplication.cpp
-LINK : warning LNK4098: 默认库“MSVCRT”与其他库的使用冲突；请使用 /NODEFAULTLIB:library
+﻿  SwapChainRecreation.cpp
   Vulkan_Study.vcxproj -> D:\Project\Vulkan_Study\Vulkan_Study\x64\Debug\Vulkan_Study.exe

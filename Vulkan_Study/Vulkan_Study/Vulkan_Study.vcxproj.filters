@@ -24,12 +24,18 @@
     <ClCompile Include="SwapChainRecreation.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="VertexBuffer.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="HelloTriangleApplication.h">
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="SwapChainRecreation.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="VertexBuffer.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>

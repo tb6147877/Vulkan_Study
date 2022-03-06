@@ -1,11 +1,13 @@
 #include "HelloTriangleApplication.h"
 #include "SwapChainRecreation.h"
 #include "VertexBuffer.h"
+#include "StagingBuffer.h"
 
 int main() {
 	//HelloTriangleApplication app;
 	//SwapChainRecreation app;
-	VertexBuffer app;
+	//VertexBuffer app;
+	StagingBuffer app;
 
 	try {
 		app.run();

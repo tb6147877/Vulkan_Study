@@ -2,12 +2,14 @@
 #include "SwapChainRecreation.h"
 #include "VertexBuffer.h"
 #include "StagingBuffer.h"
+#include "IndexBuffer.h"
 
 int main() {
 	//HelloTriangleApplication app;
 	//SwapChainRecreation app;
 	//VertexBuffer app;
-	StagingBuffer app;
+	//StagingBuffer app;
+	IndexBuffer app;
 
 	try {
 		app.run();

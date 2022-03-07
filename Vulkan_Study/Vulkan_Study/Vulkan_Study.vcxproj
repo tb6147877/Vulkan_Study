@@ -156,6 +156,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="HelloTriangleApplication.cpp" />
+    <ClCompile Include="IndexBuffer.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="StagingBuffer.cpp" />
     <ClCompile Include="SwapChainRecreation.cpp" />
@@ -163,6 +164,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="HelloTriangleApplication.h" />
+    <ClInclude Include="IndexBuffer.h" />
     <ClInclude Include="StagingBuffer.h" />
     <ClInclude Include="SwapChainRecreation.h" />
     <ClInclude Include="VertexBuffer.h" />

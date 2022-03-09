@@ -3,13 +3,15 @@
 #include "VertexBuffer.h"
 #include "StagingBuffer.h"
 #include "IndexBuffer.h"
+#include "Descriptor.h"
 
 int main() {
 	//HelloTriangleApplication app;
 	//SwapChainRecreation app;
 	//VertexBuffer app;
 	//StagingBuffer app;
-	IndexBuffer app;
+	//IndexBuffer app;
+	Descriptor app;
 
 	try {
 		app.run();
@@ -22,3 +24,4 @@ int main() {
 	return EXIT_SUCCESS;
 
 }
+

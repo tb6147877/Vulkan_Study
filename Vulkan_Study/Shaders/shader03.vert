@@ -1,5 +1,6 @@
 #version 450
 
+//当同时有多个descriptor set时，需要使用layout(set = 0, binding = 0) 来引用descriptor set
 layout(binding=0) uniform UniformBufferObject{
     mat4 model;
     mat4 view;

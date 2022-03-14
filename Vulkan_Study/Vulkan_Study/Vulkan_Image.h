@@ -47,6 +47,7 @@ struct SwapChainSupportDetails {
 struct Vertex {
 	glm::vec2 pos;
 	glm::vec3 color;
+	glm::vec2 texCoord;
 
 	static VkVertexInputBindingDescription getBindingDescription() {
 		VkVertexInputBindingDescription bindingDescription{};
@@ -58,8 +59,8 @@ struct Vertex {
 	}
 
 
-	static std::array<VkVertexInputAttributeDescription, 2> getAttributeDescriptions() {
-		std::array<VkVertexInputAttributeDescription, 2> attributeDescriptions{};
+	static std::array<VkVertexInputAttributeDescription, 3> getAttributeDescriptions() {
+		std::array<VkVertexInputAttributeDescription, 3> attributeDescriptions{};
 
 		//attribute0 顶点坐标
 		attributeDescriptions[0].binding = 0;//所属的binding
@@ -71,6 +72,11 @@ struct Vertex {
 		attributeDescriptions[1].location = 1;
 		attributeDescriptions[1].format = VK_FORMAT_R32G32B32_SFLOAT;
 		attributeDescriptions[1].offset = offsetof(Vertex, color);
+
+		attributeDescriptions[2].binding = 0;
+		attributeDescriptions[2].location = 2;
+		attributeDescriptions[2].format = VK_FORMAT_R32G32_SFLOAT;
+		attributeDescriptions[2].offset = offsetof(Vertex, texCoord);
 
 		return attributeDescriptions;
 	}
@@ -100,6 +106,8 @@ VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL: Optimal for sampling from a shader
 
 
 //todo:自己创建独立的transfer queue
+//todo:layout的意思没搞懂
+//todo：流水线的barrier没搞懂
 class Vulkan_Image {
 public:
 	void run();
@@ -111,12 +119,13 @@ private:
 	const std::vector<const char*> deviceExtensions = { VK_KHR_SWAPCHAIN_EXTENSION_NAME };//需要声明的extension的列表
 
 	//interleaving vertex attributes，因为vertex attributes是交错在一起的
-	const std::vector<Vertex> vertices = {//顶点clip space坐标，顶点颜色
-		{{-0.5f, -0.5f}, {1.0f, 0.0f, 0.0f}},
-		{{0.5f, -0.5f}, {0.0f, 1.0f, 0.0f}},
-		{{0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}},
-		{{-0.5f, 0.5f}, {1.0f, 1.0f, 1.0f}}
-	};
+	const std::vector<Vertex> vertices = {
+ { {-0.5f, -0.5f}, {1.0f, 0.0f, 0.0f}, {0.0f, 0.0f}},//顶点clip space坐标，顶点颜色，UV坐标
+ { {0.5f, -0.5f}, {0.0f, 1.0f, 0.0f}, {1.0f, 0.0f}},
+ { {0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}, {1.0f, 1.0f}},
+ { {-0.5f, 0.5f}, {1.0f, 1.0f, 1.0f}, {0.0f, 1.0f}}
+ };
+
 
 	const std::vector<uint16_t> indices = {
 		0, 1, 2, 2, 3, 0
@@ -156,8 +165,12 @@ private:
 	VkDeviceMemory indexBufferMemory;
 	VkBuffer uniformBuffer;
 	VkDeviceMemory uniformBufferMemory;
+
+
 	VkImage textureImage;//从buffer中访问像素也行，但是性能不好；还是从image中访问性能更高
 	VkDeviceMemory textureImageMemory;
+	VkImageView textureImageView;
+	VkSampler textureSampler;//不管是1D还是2D还是3D的图都可以采样
 
 
 	VkDescriptorPool descriptorPool;//用于分配descriptor set
@@ -323,6 +336,15 @@ private:
 
 	//这是一个helper函数，指定哪一部分的buffer拷贝到哪一部分的image中
 	void copyBufferToImage(VkBuffer buffer, VkImage image, uint32_t width, uint32_t height);
+
+	//创建图片用的image view
+	void createTextureImageView();
+
+	//这是一个helper函数，创建image view
+	VkImageView createImageView(VkImage image, VkFormat format);
+
+	//创建image sampler，掌管 filtering（nearest，bilinear，各向异性等），addressing mode（repeat，clamp等）
+	void createTextureSampler();
 };
 
 

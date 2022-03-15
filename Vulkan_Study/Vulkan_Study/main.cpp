@@ -5,6 +5,7 @@
 #include "IndexBuffer.h"
 #include "Descriptor.h"
 #include "Vulkan_Image.h"
+#include "DepthBuffer.h"
 
 int main() {
 	//HelloTriangleApplication app;
@@ -13,7 +14,8 @@ int main() {
 	//StagingBuffer app;
 	//IndexBuffer app;
 	//Descriptor app;
-	Vulkan_Image app;
+	//Vulkan_Image app;
+	DepthBuffer app;
 
 	try {
 		app.run();

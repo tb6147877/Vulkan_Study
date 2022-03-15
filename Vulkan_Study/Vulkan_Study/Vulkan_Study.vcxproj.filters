@@ -39,6 +39,9 @@
     <ClCompile Include="Vulkan_Image.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="DepthBuffer.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="HelloTriangleApplication.h">
@@ -60,6 +63,9 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="Vulkan_Image.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="DepthBuffer.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>

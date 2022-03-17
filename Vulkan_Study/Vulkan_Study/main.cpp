@@ -7,6 +7,7 @@
 #include "Vulkan_Image.h"
 #include "DepthBuffer.h"
 #include "LoadModel.h"
+#include "Mipmap.h"
 
 int main() {
 	//HelloTriangleApplication app;
@@ -17,7 +18,8 @@ int main() {
 	//Descriptor app;
 	//Vulkan_Image app;
 	//DepthBuffer app;
-	LoadModel app;
+	//LoadModel app;
+	Mipmap app;
 
 	try {
 		app.run();

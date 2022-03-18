@@ -48,6 +48,9 @@
     <ClCompile Include="Mipmap.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="MSAA.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="HelloTriangleApplication.h">
@@ -78,6 +81,9 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="Mipmap.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="MSAA.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>

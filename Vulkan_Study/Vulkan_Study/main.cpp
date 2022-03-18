@@ -8,6 +8,7 @@
 #include "DepthBuffer.h"
 #include "LoadModel.h"
 #include "Mipmap.h"
+#include "MSAA.h"
 
 int main() {
 	//HelloTriangleApplication app;
@@ -19,7 +20,8 @@ int main() {
 	//Vulkan_Image app;
 	//DepthBuffer app;
 	//LoadModel app;
-	Mipmap app;
+	//Mipmap app;
+	MSAA app;
 
 	try {
 		app.run();
@@ -32,4 +34,6 @@ int main() {
 	return EXIT_SUCCESS;
 
 }
+
+
 

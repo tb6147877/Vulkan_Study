@@ -162,6 +162,7 @@
     <ClCompile Include="LoadModel.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Mipmap.cpp" />
+    <ClCompile Include="MSAA.cpp" />
     <ClCompile Include="StagingBuffer.cpp" />
     <ClCompile Include="SwapChainRecreation.cpp" />
     <ClCompile Include="VertexBuffer.cpp" />
@@ -174,6 +175,7 @@
     <ClInclude Include="IndexBuffer.h" />
     <ClInclude Include="LoadModel.h" />
     <ClInclude Include="Mipmap.h" />
+    <ClInclude Include="MSAA.h" />
     <ClInclude Include="StagingBuffer.h" />
     <ClInclude Include="SwapChainRecreation.h" />
     <ClInclude Include="VertexBuffer.h" />

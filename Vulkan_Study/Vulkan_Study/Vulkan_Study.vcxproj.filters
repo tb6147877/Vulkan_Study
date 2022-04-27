@@ -1,90 +1,106 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <Filter Include="源文件">
-      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
-      <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
-    </Filter>
-    <Filter Include="头文件">
-      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
-      <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
-    </Filter>
     <Filter Include="资源文件">
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="basic">
+      <UniqueIdentifier>{b8dae8b4-f284-4b60-bc53-26abbb3ef160}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="basic\头文件">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
+    </Filter>
+    <Filter Include="basic\源文件">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="forward_rendering">
+      <UniqueIdentifier>{e1c19727-954d-4419-bfca-32ec3b1866bc}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="main.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
     <ClCompile Include="HelloTriangleApplication.cpp">
-      <Filter>源文件</Filter>
+      <Filter>basic\源文件</Filter>
     </ClCompile>
     <ClCompile Include="SwapChainRecreation.cpp">
-      <Filter>源文件</Filter>
+      <Filter>basic\源文件</Filter>
     </ClCompile>
     <ClCompile Include="VertexBuffer.cpp">
-      <Filter>源文件</Filter>
+      <Filter>basic\源文件</Filter>
     </ClCompile>
     <ClCompile Include="StagingBuffer.cpp">
-      <Filter>源文件</Filter>
+      <Filter>basic\源文件</Filter>
     </ClCompile>
     <ClCompile Include="IndexBuffer.cpp">
-      <Filter>源文件</Filter>
+      <Filter>basic\源文件</Filter>
     </ClCompile>
     <ClCompile Include="Descriptor.cpp">
-      <Filter>源文件</Filter>
+      <Filter>basic\源文件</Filter>
     </ClCompile>
     <ClCompile Include="Vulkan_Image.cpp">
-      <Filter>源文件</Filter>
+      <Filter>basic\源文件</Filter>
     </ClCompile>
     <ClCompile Include="DepthBuffer.cpp">
-      <Filter>源文件</Filter>
+      <Filter>basic\源文件</Filter>
     </ClCompile>
     <ClCompile Include="LoadModel.cpp">
-      <Filter>源文件</Filter>
+      <Filter>basic\源文件</Filter>
     </ClCompile>
     <ClCompile Include="Mipmap.cpp">
-      <Filter>源文件</Filter>
+      <Filter>basic\源文件</Filter>
     </ClCompile>
     <ClCompile Include="MSAA.cpp">
-      <Filter>源文件</Filter>
+      <Filter>basic\源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="ForwardRendering.cpp">
+      <Filter>forward_rendering</Filter>
+    </ClCompile>
+    <ClCompile Include="main.cpp" />
+    <ClCompile Include="VulkanSetup.cpp">
+      <Filter>forward_rendering</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="HelloTriangleApplication.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="SwapChainRecreation.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="VertexBuffer.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="StagingBuffer.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="IndexBuffer.h">
-      <Filter>头文件</Filter>
+    <ClInclude Include="DepthBuffer.h">
+      <Filter>basic\头文件</Filter>
     </ClInclude>
     <ClInclude Include="Descriptor.h">
-      <Filter>头文件</Filter>
+      <Filter>basic\头文件</Filter>
     </ClInclude>
-    <ClInclude Include="Vulkan_Image.h">
-      <Filter>头文件</Filter>
+    <ClInclude Include="HelloTriangleApplication.h">
+      <Filter>basic\头文件</Filter>
     </ClInclude>
-    <ClInclude Include="DepthBuffer.h">
-      <Filter>头文件</Filter>
+    <ClInclude Include="IndexBuffer.h">
+      <Filter>basic\头文件</Filter>
     </ClInclude>
     <ClInclude Include="LoadModel.h">
-      <Filter>头文件</Filter>
+      <Filter>basic\头文件</Filter>
     </ClInclude>
     <ClInclude Include="Mipmap.h">
-      <Filter>头文件</Filter>
+      <Filter>basic\头文件</Filter>
     </ClInclude>
     <ClInclude Include="MSAA.h">
-      <Filter>头文件</Filter>
+      <Filter>basic\头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="StagingBuffer.h">
+      <Filter>basic\头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="SwapChainRecreation.h">
+      <Filter>basic\头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="VertexBuffer.h">
+      <Filter>basic\头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Vulkan_Image.h">
+      <Filter>basic\头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="ForwardRendering.h">
+      <Filter>forward_rendering</Filter>
+    </ClInclude>
+    <ClInclude Include="VulkanSetup.h">
+      <Filter>forward_rendering</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

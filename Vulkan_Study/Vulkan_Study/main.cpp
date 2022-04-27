@@ -1,4 +1,4 @@
-#include "HelloTriangleApplication.h"
+/*#include "HelloTriangleApplication.h"
 #include "SwapChainRecreation.h"
 #include "VertexBuffer.h"
 #include "StagingBuffer.h"
@@ -8,7 +8,10 @@
 #include "DepthBuffer.h"
 #include "LoadModel.h"
 #include "Mipmap.h"
-#include "MSAA.h"
+#include "MSAA.h"*/
+
+#include <iostream>
+#include "AdvancedRendering/Application.h"
 
 int main() {
 	//HelloTriangleApplication app;
@@ -21,7 +24,8 @@ int main() {
 	//DepthBuffer app;
 	//LoadModel app;
 	//Mipmap app;
-	MSAA app;
+	//MSAA app;
+	Application app;
 
 	try {
 		app.run();

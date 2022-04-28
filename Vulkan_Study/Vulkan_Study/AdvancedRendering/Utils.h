@@ -34,6 +34,14 @@ namespace utils
 
         static QueuefamilyIndices findQueueFamilies(VkPhysicalDevice device, VkSurfaceKHR surface);
     };
+
+    //-Memory type-------------------------------------------------------------------------------------
+    uint32_t findMemoryType(const VkPhysicalDevice* physicalDevice, uint32_t typeFilter, VkMemoryPropertyFlags properties);
+
+    //-Begin and end single use commands
+    VkCommandBuffer beginSingleTimeCommands(const VkDevice* device, const VkCommandPool& commandPool);
+    void endSingleTimeCommands(const VkDevice* device,const VkQueue* queue, const VkCommandBuffer* commandBuffer, const VkCommandPool* commandPool);
+    
 }
 
 

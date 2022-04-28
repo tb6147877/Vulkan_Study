@@ -6,12 +6,13 @@
 #include "Descriptor.h"
 #include "Vulkan_Image.h"
 #include "DepthBuffer.h"
-#include "LoadModel.h"
+
 #include "Mipmap.h"
 #include "MSAA.h"*/
 
 #include <iostream>
 #include "AdvancedRendering/Application.h"
+#include "BasicStudy/LoadModel.h"
 
 int main() {
 	//HelloTriangleApplication app;

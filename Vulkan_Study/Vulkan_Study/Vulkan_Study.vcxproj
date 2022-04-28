@@ -156,8 +156,11 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="AdvancedRendering\Application.cpp" />
+    <ClCompile Include="AdvancedRendering\Buffer.cpp" />
     <ClCompile Include="AdvancedRendering\Camera.cpp" />
     <ClCompile Include="AdvancedRendering\GBuffer.cpp" />
+    <ClCompile Include="AdvancedRendering\Image.cpp" />
+    <ClCompile Include="AdvancedRendering\Model.cpp" />
     <ClCompile Include="AdvancedRendering\Orientation.cpp" />
     <ClCompile Include="AdvancedRendering\SpotLight.cpp" />
     <ClCompile Include="BasicStudy\DepthBuffer.cpp">
@@ -1114,8 +1117,11 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AdvancedRendering\Application.h" />
+    <ClInclude Include="AdvancedRendering\Buffer.h" />
     <ClInclude Include="AdvancedRendering\Camera.h" />
     <ClInclude Include="AdvancedRendering\GBuffer.h" />
+    <ClInclude Include="AdvancedRendering\Image.h" />
+    <ClInclude Include="AdvancedRendering\Model.h" />
     <ClInclude Include="AdvancedRendering\Orientation.h" />
     <ClInclude Include="AdvancedRendering\SpotLight.h" />
     <ClInclude Include="AdvancedRendering\types.h" />

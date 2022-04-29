@@ -1123,6 +1123,7 @@
     <ClInclude Include="AdvancedRendering\Image.h" />
     <ClInclude Include="AdvancedRendering\Model.h" />
     <ClInclude Include="AdvancedRendering\Orientation.h" />
+    <ClInclude Include="AdvancedRendering\Print.h" />
     <ClInclude Include="AdvancedRendering\SpotLight.h" />
     <ClInclude Include="AdvancedRendering\types.h" />
     <ClInclude Include="BasicStudy\DepthBuffer.h" />

@@ -41,6 +41,9 @@ namespace utils
     //-Begin and end single use commands
     VkCommandBuffer beginSingleTimeCommands(const VkDevice* device, const VkCommandPool& commandPool);
     void endSingleTimeCommands(const VkDevice* device,const VkQueue* queue, const VkCommandBuffer* commandBuffer, const VkCommandPool* commandPool);
+
+    //-Texture operation info structs------------------------------------------------------------------
+    bool hasStencilComponent(VkFormat format);
     
 }
 

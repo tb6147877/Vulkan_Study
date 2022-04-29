@@ -37,9 +37,10 @@ public:
 
 private:
     //-Members--------------------------------------------------------------------
-    glm::vec3 _center;
+    glm::vec3 _center{0.0};
     std::vector<Vertex> _vertices;
     std::vector<uint32_t> _indices;
     std::vector<Image> _textures;
-    
+    FileExtension _ext;
+    bool loadStatus;
 };

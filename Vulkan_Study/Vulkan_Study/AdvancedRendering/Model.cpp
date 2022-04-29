@@ -29,5 +29,6 @@ void Model::loadGltfModel(const std::string& path)
 //-File utils----------------------------------------------------------------------
 Model::FileExtension Model::getExtension(const std::string& path)
 {
+    
     throw std::runtime_error("Unsupported model format!");
 }

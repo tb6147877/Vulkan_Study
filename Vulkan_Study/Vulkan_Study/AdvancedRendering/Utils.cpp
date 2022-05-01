@@ -1,6 +1,9 @@
 ﻿#include "Utils.h"
 
+#include <functional>
 #include <stdexcept>
+
+#include "VulkanSetup.h"
 
 namespace utils
 {
@@ -105,6 +108,53 @@ namespace utils
     bool hasStencilComponent(VkFormat format)
     {
         return format==VK_FORMAT_D32_SFLOAT_S8_UINT||format==VK_FORMAT_D24_UNORM_S8_UINT;
+    }
+
+    void createCommandPool(const VulkanSetup& vkSetup, VkCommandPool* commandPool, VkCommandPoolCreateFlags flags)
+    {
+        QueuefamilyIndices queueFamilyIndices=QueuefamilyIndices::findQueueFamilies(vkSetup._physicalDevice,vkSetup._surface);
+        VkCommandPoolCreateInfo poolInfo{};
+        poolInfo.sType=VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
+        poolInfo.queueFamilyIndex=queueFamilyIndices.graphicsFamily.value(); //the queue to submit to
+        poolInfo.flags=flags;
+
+        if (vkCreateCommandPool(vkSetup._device,&poolInfo,nullptr,commandPool)!=VK_SUCCESS)
+        {
+            throw std::runtime_error("failed to create command pool");
+        }
+    }
+    
+    void createCommandBuffers(const VulkanSetup& vkSetup, uint32_t count, VkCommandBuffer* commandBuffers, VkCommandPool& commandPool)
+    {
+        VkCommandBufferAllocateInfo allocInfo{};
+        
+    }
+
+    VkDescriptorSetLayoutBinding initDescriptorSetLayoutBinding(
+        uint32_t binding,
+        VkDescriptorType type,
+        VkPipelineStageFlags flags
+    )
+    {
+        VkDescriptorSetLayoutBinding descSetLayoutBinding{};
+        descSetLayoutBinding.descriptorType=type;
+        descSetLayoutBinding.descriptorCount=1;//change manually later if needed
+        descSetLayoutBinding.binding=binding;
+        descSetLayoutBinding.stageFlags=flags;
+        return descSetLayoutBinding;
+    }
+
+    VkImageViewCreateInfo initImageViewCreateInfo(VkImage image,VkImageViewType type, VkFormat format,
+        VkComponentMapping componentMapping, VkImageSubresourceRange subResourceRange)
+    {
+        VkImageViewCreateInfo viewCreateInfo{};
+        viewCreateInfo.sType=VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+        viewCreateInfo.image=image;
+        viewCreateInfo.viewType=type;//image as 1/2/3D textures and cubemaps
+        viewCreateInfo.format=format;
+        viewCreateInfo.components=componentMapping;
+        viewCreateInfo.subresourceRange=subResourceRange;
+        return viewCreateInfo;
     }
     
 }

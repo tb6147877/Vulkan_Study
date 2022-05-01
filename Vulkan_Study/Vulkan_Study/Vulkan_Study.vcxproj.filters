@@ -21,86 +21,176 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="HelloTriangleApplication.cpp">
-      <Filter>basic\源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="SwapChainRecreation.cpp">
-      <Filter>basic\源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="VertexBuffer.cpp">
-      <Filter>basic\源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="StagingBuffer.cpp">
-      <Filter>basic\源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="IndexBuffer.cpp">
-      <Filter>basic\源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="Descriptor.cpp">
-      <Filter>basic\源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="Vulkan_Image.cpp">
-      <Filter>basic\源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="DepthBuffer.cpp">
-      <Filter>basic\源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="LoadModel.cpp">
-      <Filter>basic\源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="Mipmap.cpp">
-      <Filter>basic\源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="MSAA.cpp">
-      <Filter>basic\源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="ForwardRendering.cpp">
-      <Filter>forward_rendering</Filter>
-    </ClCompile>
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="VulkanSetup.cpp">
-      <Filter>forward_rendering</Filter>
+    <ClCompile Include="AdvancedRendering\Application.cpp">
+      <Filter>basic\源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="AdvancedRendering\Buffer.cpp">
+      <Filter>basic\源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="AdvancedRendering\Camera.cpp">
+      <Filter>basic\源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="AdvancedRendering\DeferredRendering.cpp">
+      <Filter>basic\源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="AdvancedRendering\FrameBuffer.cpp">
+      <Filter>basic\源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="AdvancedRendering\GBuffer.cpp">
+      <Filter>basic\源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="AdvancedRendering\Image.cpp">
+      <Filter>basic\源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="AdvancedRendering\Model.cpp">
+      <Filter>basic\源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="AdvancedRendering\Orientation.cpp">
+      <Filter>basic\源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="AdvancedRendering\RenderingBase.cpp">
+      <Filter>basic\源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="AdvancedRendering\SpotLight.cpp">
+      <Filter>basic\源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="AdvancedRendering\SwapChain.cpp">
+      <Filter>basic\源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="BasicStudy\DepthBuffer.cpp">
+      <Filter>basic\源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="BasicStudy\Descriptor.cpp">
+      <Filter>basic\源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="BasicStudy\HelloTriangleApplication.cpp">
+      <Filter>basic\源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="BasicStudy\IndexBuffer.cpp">
+      <Filter>basic\源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="BasicStudy\LoadModel.cpp">
+      <Filter>basic\源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="BasicStudy\Mipmap.cpp">
+      <Filter>basic\源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="BasicStudy\MSAA.cpp">
+      <Filter>basic\源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="BasicStudy\StagingBuffer.cpp">
+      <Filter>basic\源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="BasicStudy\SwapChainRecreation.cpp">
+      <Filter>basic\源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="AdvancedRendering\ForwardRendering.cpp">
+      <Filter>basic\源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="AdvancedRendering\Utils.cpp">
+      <Filter>basic\源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="AdvancedRendering\VulkanSetup.cpp">
+      <Filter>basic\源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="BasicStudy\VertexBuffer.cpp">
+      <Filter>basic\源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="BasicStudy\Vulkan_Image.cpp">
+      <Filter>basic\源文件</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="DepthBuffer.h">
+    <ClInclude Include="AdvancedRendering\Application.h">
       <Filter>basic\头文件</Filter>
     </ClInclude>
-    <ClInclude Include="Descriptor.h">
+    <ClInclude Include="AdvancedRendering\Assert.h">
       <Filter>basic\头文件</Filter>
     </ClInclude>
-    <ClInclude Include="HelloTriangleApplication.h">
+    <ClInclude Include="AdvancedRendering\Buffer.h">
       <Filter>basic\头文件</Filter>
     </ClInclude>
-    <ClInclude Include="IndexBuffer.h">
+    <ClInclude Include="AdvancedRendering\Camera.h">
       <Filter>basic\头文件</Filter>
     </ClInclude>
-    <ClInclude Include="LoadModel.h">
+    <ClInclude Include="AdvancedRendering\DeferredRendering.h">
       <Filter>basic\头文件</Filter>
     </ClInclude>
-    <ClInclude Include="Mipmap.h">
+    <ClInclude Include="AdvancedRendering\FrameBuffer.h">
       <Filter>basic\头文件</Filter>
     </ClInclude>
-    <ClInclude Include="MSAA.h">
+    <ClInclude Include="AdvancedRendering\GBuffer.h">
       <Filter>basic\头文件</Filter>
     </ClInclude>
-    <ClInclude Include="StagingBuffer.h">
+    <ClInclude Include="AdvancedRendering\Image.h">
       <Filter>basic\头文件</Filter>
     </ClInclude>
-    <ClInclude Include="SwapChainRecreation.h">
+    <ClInclude Include="AdvancedRendering\Model.h">
       <Filter>basic\头文件</Filter>
     </ClInclude>
-    <ClInclude Include="VertexBuffer.h">
+    <ClInclude Include="AdvancedRendering\Orientation.h">
       <Filter>basic\头文件</Filter>
     </ClInclude>
-    <ClInclude Include="Vulkan_Image.h">
+    <ClInclude Include="AdvancedRendering\Print.h">
       <Filter>basic\头文件</Filter>
     </ClInclude>
-    <ClInclude Include="ForwardRendering.h">
-      <Filter>forward_rendering</Filter>
+    <ClInclude Include="AdvancedRendering\RenderingBase.h">
+      <Filter>basic\头文件</Filter>
     </ClInclude>
-    <ClInclude Include="VulkanSetup.h">
-      <Filter>forward_rendering</Filter>
+    <ClInclude Include="AdvancedRendering\SpotLight.h">
+      <Filter>basic\头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="AdvancedRendering\SwapChain.h">
+      <Filter>basic\头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="AdvancedRendering\types.h">
+      <Filter>basic\头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="BasicStudy\DepthBuffer.h">
+      <Filter>basic\头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="BasicStudy\Descriptor.h">
+      <Filter>basic\头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="BasicStudy\HelloTriangleApplication.h">
+      <Filter>basic\头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="BasicStudy\IndexBuffer.h">
+      <Filter>basic\头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="BasicStudy\LoadModel.h">
+      <Filter>basic\头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="BasicStudy\Mipmap.h">
+      <Filter>basic\头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="BasicStudy\MSAA.h">
+      <Filter>basic\头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="BasicStudy\StagingBuffer.h">
+      <Filter>basic\头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="BasicStudy\SwapChainRecreation.h">
+      <Filter>basic\头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="BasicStudy\VertexBuffer.h">
+      <Filter>basic\头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="BasicStudy\Vulkan_Image.h">
+      <Filter>basic\头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="AdvancedRendering\AppConstants.h">
+      <Filter>basic\头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="AdvancedRendering\ForwardRendering.h">
+      <Filter>basic\头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="AdvancedRendering\Utils.h">
+      <Filter>basic\头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="AdvancedRendering\VulkanSetup.h">
+      <Filter>basic\头文件</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

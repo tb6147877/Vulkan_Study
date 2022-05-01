@@ -15,8 +15,11 @@ public:
     {
         glm::vec3 pos;
         glm::vec3 nor;
-        glm::vec4 tan;
         glm::vec2 tex;
+
+        bool operator==(const Vertex& other) const {
+            return pos == other.pos && nor == other.nor && tex == other.tex;
+        }
     };
 
 public:

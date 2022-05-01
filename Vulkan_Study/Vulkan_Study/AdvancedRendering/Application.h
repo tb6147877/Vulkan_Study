@@ -3,9 +3,12 @@
 
 #include "Camera.h"
 #include "GBuffer.h"
+
 #include "SpotLight.h"
 #include "VulkanSetup.h"
-
+#include "Model.h"
+#include "DeferredRendering.h"
+#include "SwapChain.h"
 
 class Application
 {
@@ -19,12 +22,12 @@ private:
     //-Initialise glfw window----------------------------------------------------------------------
     void initWindow();
 
-    //-Command buffer initialisation functions-------------------------------------------
-    void createCommandPool(VkCommandPool* commandPool, VkCommandPoolCreateFlags flags);
-
     //-Window/Input callbacks--------------------------------------------------------------------
     static void framebufferResizeCallback(GLFWwindow* window, int width, int height);
 
+
+    //-End of application cleanup-----------------------------------------------------------
+    void cleanup();
 private:
     //-Members--------------------------------------------------------------------------------
     GLFWwindow* _window;
@@ -32,6 +35,9 @@ private:
     Camera _camera;
     PointLight _pointLights[1];
     SpotLight _spotLight;
+    Model _model;
+    RenderingBase* _renderer;
+    SwapChain _swapChain;
 
     VkCommandPool _renderCommandPool;
     std::vector<VkCommandBuffer> _offScreenCommandBuffer;

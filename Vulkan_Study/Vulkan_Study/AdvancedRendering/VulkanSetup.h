@@ -18,7 +18,8 @@ public:
     void initSetup(GLFWwindow* window);
     void cleanupSetup();
 
-
+    //-Swap chain related--------------------------------------------------------------------------
+    SwapChainSupportDetails querySwapchainSupport(VkPhysicalDevice device);
 
 public:
     //-Members------------------------------------------------------------------------
@@ -58,7 +59,6 @@ private:
     //-Vulkan devices---------------------------------------------------------------------------------
     void pickPhysicalDevice();
     bool isDeviceSuitable(VkPhysicalDevice device);
-    SwapChainSupportDetails querySwapchainSupport(VkPhysicalDevice device);
     bool checkDeviceExtensionSupport(VkPhysicalDevice device);
     void createLogicalDevice();
 };

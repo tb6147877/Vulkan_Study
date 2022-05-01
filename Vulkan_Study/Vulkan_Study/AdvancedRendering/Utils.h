@@ -3,6 +3,8 @@
 #include <optional>
 #include <vulkan/vulkan_core.h>
 
+class VulkanSetup;
+
 #ifndef NDEBUG
 const bool enableValidationLayers = true;
 #else
@@ -44,6 +46,21 @@ namespace utils
 
     //-Texture operation info structs------------------------------------------------------------------
     bool hasStencilComponent(VkFormat format);
+
+    //-Command buffer initialisation functions----------------------------------------------------------
+    void createCommandPool(const VulkanSetup& vkSetup, VkCommandPool* commandPool, VkCommandPoolCreateFlags flags);
+    void createCommandBuffers(const VulkanSetup& vkSetup, uint32_t count, VkCommandBuffer* commandBuffers, VkCommandPool& commandPool);
+
+    //-Descriptor set struct--------------------------------------------------------------------------
+    VkDescriptorSetLayoutBinding initDescriptorSetLayoutBinding(
+        uint32_t binding,
+        VkDescriptorType type,
+        VkPipelineStageFlags flags=0
+    );
+
+    //-Image structs-------------------------------------------------------------------
+    VkImageViewCreateInfo initImageViewCreateInfo(VkImage image,VkImageViewType type, VkFormat format,
+        VkComponentMapping componentMapping, VkImageSubresourceRange subResourceRange);
     
 }
 

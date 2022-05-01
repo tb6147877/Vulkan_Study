@@ -353,6 +353,7 @@ void VulkanSetup::createLogicalDevice()
 	createInfo.queueCreateInfoCount=static_cast<uint32_t>(queueCreateInfos.size());
 	createInfo.pQueueCreateInfos=queueCreateInfos.data();//raw underlying array
 	createInfo.pEnabledFeatures=&deviceFeatures;
+	createInfo.enabledExtensionCount = static_cast<uint32_t>(deviceExtensions.size());
 	createInfo.ppEnabledExtensionNames=deviceExtensions.data();
 
 	if (enableValidationLayers)

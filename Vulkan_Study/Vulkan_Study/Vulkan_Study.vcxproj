@@ -43,14 +43,14 @@
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v142</PlatformToolset>
-    <CharacterSet>Unicode</CharacterSet>
+    <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <PlatformToolset>v142</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
-    <CharacterSet>Unicode</CharacterSet>
+    <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
@@ -132,6 +132,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>D:\Project\Vulkan_Study\vk_reliable\glfw-3.3.6.bin.WIN64\lib-vc2019;C:\VulkanSDK\1.2.198.1\Lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>vulkan-1.lib;glfw3.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <DataExecutionPrevention>false</DataExecutionPrevention>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -152,17 +153,22 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>D:\Project\Vulkan_Study\vk_reliable\glfw-3.3.6.bin.WIN64\lib-vc2019;C:\VulkanSDK\1.2.198.1\Lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>vulkan-1.lib;glfw3.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <DataExecutionPrevention>false</DataExecutionPrevention>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="AdvancedRendering\Application.cpp" />
     <ClCompile Include="AdvancedRendering\Buffer.cpp" />
     <ClCompile Include="AdvancedRendering\Camera.cpp" />
+    <ClCompile Include="AdvancedRendering\DeferredRendering.cpp" />
+    <ClCompile Include="AdvancedRendering\FrameBuffer.cpp" />
     <ClCompile Include="AdvancedRendering\GBuffer.cpp" />
     <ClCompile Include="AdvancedRendering\Image.cpp" />
     <ClCompile Include="AdvancedRendering\Model.cpp" />
     <ClCompile Include="AdvancedRendering\Orientation.cpp" />
+    <ClCompile Include="AdvancedRendering\RenderingBase.cpp" />
     <ClCompile Include="AdvancedRendering\SpotLight.cpp" />
+    <ClCompile Include="AdvancedRendering\SwapChain.cpp" />
     <ClCompile Include="BasicStudy\DepthBuffer.cpp">
       <RuntimeLibrary>MultiThreadedDebugDll</RuntimeLibrary>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
@@ -1117,14 +1123,19 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AdvancedRendering\Application.h" />
+    <ClInclude Include="AdvancedRendering\Assert.h" />
     <ClInclude Include="AdvancedRendering\Buffer.h" />
     <ClInclude Include="AdvancedRendering\Camera.h" />
+    <ClInclude Include="AdvancedRendering\DeferredRendering.h" />
+    <ClInclude Include="AdvancedRendering\FrameBuffer.h" />
     <ClInclude Include="AdvancedRendering\GBuffer.h" />
     <ClInclude Include="AdvancedRendering\Image.h" />
     <ClInclude Include="AdvancedRendering\Model.h" />
     <ClInclude Include="AdvancedRendering\Orientation.h" />
     <ClInclude Include="AdvancedRendering\Print.h" />
+    <ClInclude Include="AdvancedRendering\RenderingBase.h" />
     <ClInclude Include="AdvancedRendering\SpotLight.h" />
+    <ClInclude Include="AdvancedRendering\SwapChain.h" />
     <ClInclude Include="AdvancedRendering\types.h" />
     <ClInclude Include="BasicStudy\DepthBuffer.h" />
     <ClInclude Include="BasicStudy\Descriptor.h" />

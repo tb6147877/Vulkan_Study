@@ -8,8 +8,11 @@
 const std::string APP_NAME = "Vulkan Study";
 const std::string ENGINE_NAME = "Vulkan Engine";
 
-const uint32_t WIDTH=1024;
-const uint32_t HEIGHT=768;
+const uint32_t WIDTH=1920;
+const uint32_t HEIGHT=1080;
+
+//path to the model
+const std::string MODEL_PATH="D:/Project/Vulkan_Study/Vulkan_Study/Models/viking_room.obj";
 
 namespace Axes {
     // world axes

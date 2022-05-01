@@ -4,5 +4,5 @@
 class DeferredRendering:public RenderingBase
 {
 public:
-    virtual void createDescriptorSetLayout(const VulkanSetup& vkSetup) override;
+    //virtual void createDescriptorSetLayout(const VulkanSetup& vkSetup) override;
 };

@@ -161,6 +161,7 @@
     <ClCompile Include="AdvancedRendering\Buffer.cpp" />
     <ClCompile Include="AdvancedRendering\Camera.cpp" />
     <ClCompile Include="AdvancedRendering\DeferredRendering.cpp" />
+    <ClCompile Include="AdvancedRendering\DepthResource.cpp" />
     <ClCompile Include="AdvancedRendering\FrameBuffer.cpp" />
     <ClCompile Include="AdvancedRendering\GBuffer.cpp" />
     <ClCompile Include="AdvancedRendering\Image.cpp" />
@@ -1127,6 +1128,7 @@
     <ClInclude Include="AdvancedRendering\Buffer.h" />
     <ClInclude Include="AdvancedRendering\Camera.h" />
     <ClInclude Include="AdvancedRendering\DeferredRendering.h" />
+    <ClInclude Include="AdvancedRendering\DepthResource.h" />
     <ClInclude Include="AdvancedRendering\FrameBuffer.h" />
     <ClInclude Include="AdvancedRendering\GBuffer.h" />
     <ClInclude Include="AdvancedRendering\Image.h" />

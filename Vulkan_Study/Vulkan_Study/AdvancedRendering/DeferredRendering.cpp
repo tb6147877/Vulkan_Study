@@ -6,6 +6,7 @@
 #include "Utils.h"
 
 
+/*
 void DeferredRendering::createDescriptorSetLayout(const VulkanSetup& vkSetup)
 {
     std::vector<VkDescriptorSetLayoutBinding> setLayoutBindings={
@@ -36,3 +37,4 @@ void DeferredRendering::createDescriptorSetLayout(const VulkanSetup& vkSetup)
         throw std::runtime_error("failed to create descriptor set layout");
     }
 }
+*/

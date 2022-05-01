@@ -5,7 +5,7 @@
 #include "Image.h"
 #include "Utils.h"
 
-void SwapChain::initSwapchain(VulkanSetup pVkSetup)
+void SwapChain::initSwapchain(VulkanSetup* pVkSetup)
 {
     _vkSetup=pVkSetup;
 
@@ -17,19 +17,26 @@ void SwapChain::initSwapchain(VulkanSetup pVkSetup)
     {
         VkImageViewCreateInfo imageViewCreateInfo=utils::initImageViewCreateInfo(_images[i],
             VK_IMAGE_VIEW_TYPE_2D,_imageFormat,{},{VK_IMAGE_ASPECT_COLOR_BIT,0,1,0,1});
-        _imageViews[i]=VulkanImage::createImageView(&_vkSetup,imageViewCreateInfo);
+        _imageViews[i]=VulkanImage::createImageView(_vkSetup,imageViewCreateInfo);
     }
 }
 
 
 void SwapChain::cleanupSwapChain()
 {
-    vkDestroySwapchainKHR(_vkSetup._device,_swapChain,nullptr);
+    //loop over the image views and destroy them. NB we don't destroy the images because they are implicilty created
+    //and destroyed by the swap chain
+    for (size_t i=0;i<_imageViews.size();i++)
+    {
+        vkDestroyImageView(_vkSetup->_device,_imageViews[i], nullptr);
+    }
+    
+    vkDestroySwapchainKHR(_vkSetup->_device,_swapChain,nullptr);
 }
 
 void SwapChain::createSwapChain()
 {
-    VulkanSetup::SwapChainSupportDetails supportDetails=querySwapChainSupport();
+    VulkanSetup::SwapChainSupportDetails supportDetails=_vkSetup->querySwapchainSupport(_vkSetup->_physicalDevice);
 
     VkSurfaceFormatKHR surfaceFormat=chooseSwapSurfaceFormat(supportDetails.formats);
     VkPresentModeKHR presentMode=chooseSwapPresentMode(supportDetails.presentModes);
@@ -43,7 +50,7 @@ void SwapChain::createSwapChain()
 
     VkSwapchainCreateInfoKHR createInfo{};
     createInfo.sType=VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
-    createInfo.surface=_vkSetup._surface;
+    createInfo.surface=_vkSetup->_surface;
     createInfo.minImageCount=imageCount;
     createInfo.imageFormat=surfaceFormat.format;
     createInfo.imageColorSpace=surfaceFormat.colorSpace;
@@ -52,7 +59,7 @@ void SwapChain::createSwapChain()
     createInfo.imageUsage=VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
 
     // how to handle the swapchain images across multiple queue families( in case graphics queue is different to presentation queue)
-    utils::QueuefamilyIndices indices=utils::QueuefamilyIndices::findQueueFamilies(_vkSetup._physicalDevice,_vkSetup._surface);
+    utils::QueuefamilyIndices indices=utils::QueuefamilyIndices::findQueueFamilies(_vkSetup->_physicalDevice,_vkSetup->_surface);
     uint32_t queueFamilyIndices[]={indices.graphicsFamily.value(),indices.presentFamily.value()};
     if (indices.graphicsFamily!=indices.presentFamily)
     {
@@ -73,15 +80,15 @@ void SwapChain::createSwapChain()
     createInfo.clipped=VK_TRUE;
     createInfo.oldSwapchain=VK_NULL_HANDLE;
 
-    if (vkCreateSwapchainKHR(_vkSetup._device,&createInfo,nullptr,&_swapChain)!=VK_SUCCESS)
+    if (vkCreateSwapchainKHR(_vkSetup->_device,&createInfo,nullptr,&_swapChain)!=VK_SUCCESS)
     {
         throw std::runtime_error("failed to create swap chain!");
     }
 
     //get images
-    vkGetSwapchainImagesKHR(_vkSetup._device,_swapChain,&imageCount,nullptr);
+    vkGetSwapchainImagesKHR(_vkSetup->_device,_swapChain,&imageCount,nullptr);
     _images.resize(imageCount);
-    vkGetSwapchainImagesKHR(_vkSetup._device,_swapChain,&imageCount,_images.data());
+    vkGetSwapchainImagesKHR(_vkSetup->_device,_swapChain,&imageCount,_images.data());
 
     //save format and extent
     _imageFormat=surfaceFormat.format;
@@ -149,7 +156,7 @@ VkExtent2D SwapChain::chooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilit
     {
         //get the dimensions of the window
         int width,height;
-        glfwGetFramebufferSize(_vkSetup._window,&width,&height);
+        glfwGetFramebufferSize(_vkSetup->_window,&width,&height);
 
         //prepare the struct with the height and width of the window
         VkExtent2D actualExtent{static_cast<uint32_t>(width),static_cast<uint32_t>(height)};
@@ -162,7 +169,7 @@ VkExtent2D SwapChain::chooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilit
     }
 }
 
-VulkanSetup::SwapChainSupportDetails SwapChain::querySwapChainSupport() {
+/*VulkanSetup::SwapChainSupportDetails SwapChain::querySwapChainSupport() {
     VulkanSetup::SwapChainSupportDetails details;
     // query the surface capabilities and store in a VkSurfaceCapabilities struct
     vkGetPhysicalDeviceSurfaceCapabilitiesKHR(_vkSetup._physicalDevice, _vkSetup._surface, &details.capabilities); // takes into account device and surface when determining capabilities
@@ -190,4 +197,4 @@ VulkanSetup::SwapChainSupportDetails SwapChain::querySwapChainSupport() {
     }
 
     return details;
-}
+}*/

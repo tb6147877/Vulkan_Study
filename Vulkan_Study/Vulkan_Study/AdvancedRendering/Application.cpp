@@ -16,16 +16,16 @@ void Application::run()
 
 void Application::cleanup()
 {
-    delete _renderer;
+    delete _mainRenderer;
 }
 
 void Application::initVulkan()
 {
     _vkSetup.initSetup(_window);
-    _swapChain.initSwapchain(_vkSetup);
+    _swapChain.initSwapchain(&_vkSetup);
     utils::createCommandPool(_vkSetup,&_renderCommandPool,VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT);
 
-    _renderer->createDescriptorSetLayout(_vkSetup);
+    //_mainRenderer->createDescriptorSetLayout(_vkSetup);
    
     
 }
@@ -36,7 +36,8 @@ void Application::initScene()
     _model.loadModel(MODEL_PATH);
     _pointLights[0]= { {5.0f, -5.0f, 0.0f, 0.0f}, {0.5f, 0.5f, 0.5f, 40.0f} };
     _spotLight={{5.0f,-5.0f,0.0f},0.1f,40.0f};
-    _renderer=new DeferredRendering();
+    //_basicRenderer
+    //_mainRenderer=new DeferredRendering();
 }
 
 void Application::initWindow()

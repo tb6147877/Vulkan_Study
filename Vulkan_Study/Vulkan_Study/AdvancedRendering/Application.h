@@ -36,7 +36,8 @@ private:
     PointLight _pointLights[1];
     SpotLight _spotLight;
     Model _model;
-    RenderingBase* _renderer;
+    RenderingBase* _basicRenderer;
+    RenderingBase* _mainRenderer;
     SwapChain _swapChain;
 
     VkCommandPool _renderCommandPool;

@@ -3,6 +3,7 @@
 #include <functional>
 #include <stdexcept>
 
+#include "RenderingBase.h"
 #include "VulkanSetup.h"
 
 namespace utils
@@ -156,5 +157,180 @@ namespace utils
         viewCreateInfo.subresourceRange=subResourceRange;
         return viewCreateInfo;
     }
-    
+
+    VkPipelineVertexInputStateCreateInfo initPipelineVertexInputStateCreateInfo(
+       uint32_t bindingCount,
+       VkVertexInputBindingDescription* pVertexBindingDescriptions,
+       uint32_t attributesCount,
+       VkVertexInputAttributeDescription* pVertexAttributesDescriptions,
+       VkPipelineVertexInputStateCreateFlags flags
+    )
+    {
+        VkPipelineVertexInputStateCreateInfo vertexInputInfo{};
+        vertexInputInfo.sType=VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
+        vertexInputInfo.flags=flags;
+        vertexInputInfo.vertexBindingDescriptionCount=bindingCount;
+        vertexInputInfo.pVertexBindingDescriptions=pVertexBindingDescriptions;
+        vertexInputInfo.vertexAttributeDescriptionCount=attributesCount;
+        vertexInputInfo.pVertexAttributeDescriptions=pVertexAttributesDescriptions;
+        return vertexInputInfo;
+    }
+
+    VkPipelineShaderStageCreateInfo initPipelineShaderStageCreateInfo(
+        VkShaderStageFlagBits stage,
+        VkShaderModule& shader,
+        const char* name
+    )
+    {
+        VkPipelineShaderStageCreateInfo shaderStageInfo{};
+        shaderStageInfo.sType=VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+        shaderStageInfo.stage=stage;
+        shaderStageInfo.module=shader;
+        shaderStageInfo.pName=name;
+        return shaderStageInfo;
+    }
+
+    VkPipelineInputAssemblyStateCreateInfo initPipelineInputAssemblyStateCreateInfo(
+        VkPrimitiveTopology topology,
+        VkBool32 restartEnabled,
+        VkPipelineInputAssemblyStateCreateFlags flags
+    )
+    {
+        VkPipelineInputAssemblyStateCreateInfo info{};
+        info.sType=VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
+        info.topology=topology;
+        info.flags=flags;
+        info.primitiveRestartEnable=restartEnabled;
+        return info;
+    }
+
+    VkPipelineRasterizationStateCreateInfo initPipelineRasterStateCreateInfo(
+        VkPolygonMode polyMode,
+        VkCullModeFlags cullMode,
+        VkFrontFace frontFace,
+        VkPipelineRasterizationStateCreateFlags flags,
+        float lineWidth
+    )
+    {
+        VkPipelineRasterizationStateCreateInfo info{};
+        info.sType=VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
+        info.polygonMode=polyMode;
+        info.cullMode=cullMode;
+        info.frontFace=frontFace;
+        info.lineWidth=lineWidth;
+        info.flags=flags;
+        return info;
+    }
+
+    VkPipelineColorBlendStateCreateInfo initPipelineColorBlendStateCreateInfo(
+        uint32_t attachmentCount,
+        const VkPipelineColorBlendAttachmentState* pAttachment
+    )
+    {
+        VkPipelineColorBlendStateCreateInfo info{};
+        info.sType=VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
+        info.attachmentCount=attachmentCount;
+        info.pAttachments=pAttachment;
+        return info;
+    }
+
+    VkPipelineDepthStencilStateCreateInfo initPipelineDepthStencilStateCreateInfo(
+        VkBool32 depthTestEnable,
+        VkBool32 depthWriteEnable,
+        VkCompareOp depthCompareOp
+    )
+    {
+        VkPipelineDepthStencilStateCreateInfo info{};
+        info.sType=VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
+        info.depthTestEnable=depthTestEnable;
+        info.depthWriteEnable=depthWriteEnable;
+        info.depthCompareOp=depthCompareOp;
+        return info;
+    }
+
+    VkPipelineViewportStateCreateInfo initPipelineViewportStateCreateInfo(
+        uint32_t viewportCount,
+        VkViewport* pViewports,
+        uint32_t scissorCount,
+        VkRect2D* pScissors,
+        VkPipelineViewportStateCreateFlags flags
+    )
+    {
+        VkPipelineViewportStateCreateInfo info{};
+        info.sType=VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
+        info.viewportCount=viewportCount;
+        info.pViewports=pViewports;
+        info.scissorCount=scissorCount;
+        info.pScissors=pScissors;
+        info.flags=flags;
+        return info;
+    }
+
+    VkPipelineMultisampleStateCreateInfo initPipelineMultisampleStateCreateInfo(
+        VkSampleCountFlagBits rasterizationSamples,
+        VkPipelineMultisampleStateCreateFlags flags
+    )
+    {
+        VkPipelineMultisampleStateCreateInfo info{};
+        info.sType=VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
+        info.rasterizationSamples=rasterizationSamples;
+        info.minSampleShading=1.0f;
+        info.flags=flags;
+        return info;
+    }
+
+    VkPipelineLayoutCreateInfo initPipelineLayoutCreateInfo(
+       uint32_t layoutCount,
+       VkDescriptorSetLayout* pSetLayouts,
+       VkPipelineLayoutCreateFlags flags
+    )
+    {
+        VkPipelineLayoutCreateInfo info{};
+        info.sType=VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
+        info.setLayoutCount=layoutCount;
+        info.pSetLayouts=pSetLayouts;
+        info.flags=flags;
+        return info;
+    }
+
+    VkGraphicsPipelineCreateInfo initGraphicsPipelineCreateInfo(
+        VkPipelineLayout layout,
+        VkRenderPass renderpass,
+        VkPipelineCreateFlags flags
+    )
+    {
+        VkGraphicsPipelineCreateInfo graphicsPipelineCreateInfo{};
+        graphicsPipelineCreateInfo.sType=VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
+        graphicsPipelineCreateInfo.layout=layout;
+        graphicsPipelineCreateInfo.renderPass=renderpass;
+        graphicsPipelineCreateInfo.flags=flags;
+        graphicsPipelineCreateInfo.basePipelineIndex=-1;
+        graphicsPipelineCreateInfo.basePipelineHandle=VK_NULL_HANDLE;
+        return graphicsPipelineCreateInfo;
+    }
+
+    VkPipelineColorBlendAttachmentState initPipelineColorBlendAttachmentState(
+        VkColorComponentFlags mask,
+        VkBool32 blendEnable
+    )
+    {
+        VkPipelineColorBlendAttachmentState colorBlendAttachment{};
+        colorBlendAttachment.colorWriteMask=mask;
+        colorBlendAttachment.blendEnable=blendEnable;
+        return colorBlendAttachment;
+    }
+
+    VkPipelineDynamicStateCreateInfo initPipelineDynamicStateCreateInfo(
+        VkDynamicState* pDynamicStates,
+        uint32_t dynamicStateCount,
+        VkPipelineDynamicStateCreateFlags flags
+    )
+    {
+        VkPipelineDynamicStateCreateInfo info{};
+        info.sType=VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
+        info.pDynamicStates=pDynamicStates;
+        info.dynamicStateCount=dynamicStateCount;
+        info.flags=flags;
+        return info;
+    }
 }

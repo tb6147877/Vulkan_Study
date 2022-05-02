@@ -121,6 +121,18 @@ void ForwardRendering::createPipeline()
 {
     VkShaderModule vertShaderModule = Shader::createShaderModule(_vkSetup,Shader::readFile(FWD_VERT_SHADER));
     VkShaderModule fragShaderModule = Shader::createShaderModule(_vkSetup,Shader::readFile(FWD_FRAG_SHADER));
+
+    auto bindingDescription =_model->getBindingDescriptions(0);
+    auto attributeDescriptions=_model->getAttributeDescriptions(0);
+
+    VkViewport viewport{0.0f,0.0f,(float)_swapChain->_extent.width,(float)_swapChain->_extent.height,0.0f,1.0f};
+    VkRect2D scissor{{0,0},_swapChain->_extent};
+
+    VkPipelineColorBlendAttachmentState colorBlendAttachment=utils::initPipelineColorBlendAttachmentState(VK_COLOR_COMPONENT_R_BIT|VK_COLOR_COMPONENT_G_BIT|VK_COLOR_COMPONENT_B_BIT|VK_COLOR_COMPONENT_A_BIT,VK_FALSE);
+
+    
+    vkDestroyShaderModule(_vkSetup->_device, vertShaderModule,nullptr);
+    vkDestroyShaderModule(_vkSetup->_device, fragShaderModule,nullptr);
 }
 
 void ForwardRendering::createDescriptorSetLayout()

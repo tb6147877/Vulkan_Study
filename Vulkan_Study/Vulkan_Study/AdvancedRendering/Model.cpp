@@ -103,3 +103,36 @@ Model::FileExtension Model::getExtension(const std::string& path)
     }
     throw std::runtime_error("Unsupported model format!");
 }
+
+VkVertexInputBindingDescription Model::getBindingDescriptions(uint32_t primitiveNum)
+{
+    VkVertexInputBindingDescription bindingDescription{};
+    bindingDescription.binding=primitiveNum;//for now 1 primitive = 1 buffer,todo:???not understanded
+    bindingDescription.stride=sizeof(Vertex);
+    bindingDescription.inputRate=VK_VERTEX_INPUT_RATE_VERTEX;
+
+    return bindingDescription;
+}
+
+std::array<VkVertexInputAttributeDescription,3> Model::getAttributeDescriptions(uint32_t primitiveNum)
+{
+    std::array<VkVertexInputAttributeDescription, 3> attributeDescriptions{};
+
+    //attribute0 顶点坐标
+    attributeDescriptions[0].binding = 0;//所属的binding
+    attributeDescriptions[0].location = 0;//vertex shader里面写的location
+    attributeDescriptions[0].format = VK_FORMAT_R32G32B32_SFLOAT;//这个attribute的格式
+    attributeDescriptions[0].offset = offsetof(Vertex, pos);//这个attribute的offset
+
+    attributeDescriptions[1].binding = 0;
+    attributeDescriptions[1].location = 1;
+    attributeDescriptions[1].format = VK_FORMAT_R32G32B32_SFLOAT;
+    attributeDescriptions[1].offset = offsetof(Vertex, nor);
+
+    attributeDescriptions[2].binding = 0;
+    attributeDescriptions[2].location = 2;
+    attributeDescriptions[2].format = VK_FORMAT_R32G32_SFLOAT;
+    attributeDescriptions[2].offset = offsetof(Vertex, tex);
+
+    return attributeDescriptions;
+}

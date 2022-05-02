@@ -1,16 +1,13 @@
 ﻿#pragma once
+#include "Model.h"
 #include "SwapChain.h"
 #include "VulkanSetup.h"
 
 class RenderingBase
 {
 public:
-    //todo:拿出去
-    //-Descriptor initialisation functions--------------------------------------------
-    //virtual void createDescriptorSetLayout(const VulkanSetup& vkSetup)=0;
-
     //-Initialisation and cleanup----------------------------------------
-    virtual void initRenderer(VulkanSetup* pVkSetup, SwapChain* swapchain)=0;
+    virtual void initRenderer(VulkanSetup* pVkSetup, SwapChain* swapchain, Model* model)=0;
     virtual void cleanupRenderer()=0;
 
     //-Render pass-------------------------------------------------------
@@ -18,10 +15,14 @@ public:
 
     //-Pipelines-----------------------------------------------------------------
     virtual void createPipeline()=0;
+
+    //-Descriptor initialisation functions--------------------------------------------
+    virtual void createDescriptorSetLayout()=0;
     
 public:
     //-Members-----------------------------------------------------------
-    //VkDescriptorSetLayout _descriptorSetLayout;
+    VkDescriptorSetLayout _descriptorSetLayout;
     VulkanSetup* _vkSetup;
     SwapChain* _swapChain;
+    Model* _model;
 };

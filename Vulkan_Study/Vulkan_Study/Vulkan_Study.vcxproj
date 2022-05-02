@@ -167,7 +167,6 @@
     <ClCompile Include="AdvancedRendering\Image.cpp" />
     <ClCompile Include="AdvancedRendering\Model.cpp" />
     <ClCompile Include="AdvancedRendering\Orientation.cpp" />
-    <ClCompile Include="AdvancedRendering\RenderingBase.cpp" />
     <ClCompile Include="AdvancedRendering\SpotLight.cpp" />
     <ClCompile Include="AdvancedRendering\SwapChain.cpp" />
     <ClCompile Include="BasicStudy\DepthBuffer.cpp">
@@ -1136,6 +1135,7 @@
     <ClInclude Include="AdvancedRendering\Orientation.h" />
     <ClInclude Include="AdvancedRendering\Print.h" />
     <ClInclude Include="AdvancedRendering\RenderingBase.h" />
+    <ClInclude Include="AdvancedRendering\Shader.h" />
     <ClInclude Include="AdvancedRendering\SpotLight.h" />
     <ClInclude Include="AdvancedRendering\SwapChain.h" />
     <ClInclude Include="AdvancedRendering\types.h" />

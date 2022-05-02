@@ -1,6 +1,7 @@
 ﻿#pragma once
 #include <string>
 #include <vector>
+#include <array>
 #include <glm/vec2.hpp>
 #include <glm/vec3.hpp>
 #include <glm/vec4.hpp>
@@ -37,6 +38,10 @@ public:
 
     //-File utils----------------------------------------------------------------------
     FileExtension getExtension(const std::string& path);
+
+    //-Binding and attribute descriptions----------------------------------------------
+    VkVertexInputBindingDescription getBindingDescriptions(uint32_t primitiveNum);
+    std::array<VkVertexInputAttributeDescription,3> getAttributeDescriptions(uint32_t primitiveNum);
 
 private:
     //-Members--------------------------------------------------------------------

@@ -7,8 +7,10 @@
 #include "SpotLight.h"
 #include "VulkanSetup.h"
 #include "Model.h"
-#include "DeferredRendering.h"
+//#include "DeferredRendering.h"
 #include "SwapChain.h"
+
+class RenderingBase;
 
 class Application
 {

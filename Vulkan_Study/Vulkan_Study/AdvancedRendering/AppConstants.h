@@ -14,6 +14,10 @@ const uint32_t HEIGHT=1080;
 //path to the model
 const std::string MODEL_PATH="D:/Project/Vulkan_Study/Vulkan_Study/Models/viking_room.obj";
 
+//forward rendering shader path
+const std::string FWD_VERT_SHADER="D:/Project/Vulkan_Study/Vulkan_Study/Shaders/ForwardVert.spv";
+const std::string FWD_FRAG_SHADER="D:/Project/Vulkan_Study/Vulkan_Study/Shaders/ForwardFrag.spv";
+
 namespace Axes {
     // world axes
     const glm::vec3 WORLD_RIGHT = glm::vec3(-1.0f, 0.0f, 0.0f);

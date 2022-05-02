@@ -3,6 +3,7 @@
 #include <GLFW/glfw3.h>
 
 #include "AppConstants.h"
+#include "ForwardRendering.h"
 #include "Utils.h"
 
 
@@ -25,7 +26,7 @@ void Application::initVulkan()
     _swapChain.initSwapchain(&_vkSetup);
     utils::createCommandPool(_vkSetup,&_renderCommandPool,VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT);
 
-    //_mainRenderer->createDescriptorSetLayout(_vkSetup);
+    _basicRenderer->initRenderer(&_vkSetup,&_swapChain,&_model);
    
     
 }
@@ -36,7 +37,7 @@ void Application::initScene()
     _model.loadModel(MODEL_PATH);
     _pointLights[0]= { {5.0f, -5.0f, 0.0f, 0.0f}, {0.5f, 0.5f, 0.5f, 40.0f} };
     _spotLight={{5.0f,-5.0f,0.0f},0.1f,40.0f};
-    //_basicRenderer
+    _basicRenderer = new ForwardRendering();
     //_mainRenderer=new DeferredRendering();
 }
 

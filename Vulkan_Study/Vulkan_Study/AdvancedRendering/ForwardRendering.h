@@ -1,14 +1,11 @@
 #pragma once
 #include "RenderingBase.h"
 
-class ForwardRendering:RenderingBase
+class ForwardRendering:public RenderingBase
 {
 public:
-    //virtual void createDescriptorSetLayout(const VulkanSetup& vkSetup) override;
-    
-
     //-Initialisation and cleanup----------------------------------------
-    virtual void initRenderer(VulkanSetup* pVkSetup, SwapChain* swapchain) override;
+    virtual void initRenderer(VulkanSetup* pVkSetup, SwapChain* swapchain, Model* model) override;
     virtual void cleanupRenderer() override;
 
     //-Render pass-------------------------------------------------------
@@ -16,6 +13,9 @@ public:
 
     //-Pipelines-----------------------------------------------------------------
     virtual void createPipeline() override;
+
+    //-Descriptor initialisation functions--------------------------------------------
+    virtual void createDescriptorSetLayout() override;
 
 public:
     VkRenderPass _renderPass;

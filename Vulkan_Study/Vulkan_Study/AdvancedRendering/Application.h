@@ -8,9 +8,11 @@
 #include "VulkanSetup.h"
 #include "Model.h"
 //#include "DeferredRendering.h"
-#include "SwapChain.h"
 
-class RenderingBase;
+#include "SwapChain.h"
+#include "Texture.h"
+
+class ForwardRendering;
 
 class Application
 {
@@ -38,14 +40,11 @@ private:
     PointLight _pointLights[1];
     SpotLight _spotLight;
     Model _model;
-    RenderingBase* _basicRenderer;
-    RenderingBase* _mainRenderer;
+    ForwardRendering* _basicRenderer;
+    //RenderingBase* _mainRenderer;
     SwapChain _swapChain;
 
-    VkCommandPool _renderCommandPool;
-    std::vector<VkCommandBuffer> _offScreenCommandBuffer;
-    std::vector<VkCommandBuffer> _renderCommandBuffer;
-    std::vector<VkCommandBuffer> _shadowMapCommandBuffer;
+    
     
 
     bool _framebufferResized=false;

@@ -169,6 +169,7 @@
     <ClCompile Include="AdvancedRendering\Orientation.cpp" />
     <ClCompile Include="AdvancedRendering\SpotLight.cpp" />
     <ClCompile Include="AdvancedRendering\SwapChain.cpp" />
+    <ClCompile Include="AdvancedRendering\Texture.cpp" />
     <ClCompile Include="BasicStudy\DepthBuffer.cpp">
       <RuntimeLibrary>MultiThreadedDebugDll</RuntimeLibrary>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
@@ -1138,6 +1139,7 @@
     <ClInclude Include="AdvancedRendering\Shader.h" />
     <ClInclude Include="AdvancedRendering\SpotLight.h" />
     <ClInclude Include="AdvancedRendering\SwapChain.h" />
+    <ClInclude Include="AdvancedRendering\Texture.h" />
     <ClInclude Include="AdvancedRendering\types.h" />
     <ClInclude Include="BasicStudy\DepthBuffer.h" />
     <ClInclude Include="BasicStudy\Descriptor.h" />

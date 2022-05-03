@@ -13,17 +13,23 @@ void ForwardRendering::initRenderer(VulkanSetup* pVkSetup,SwapChain* swapchain, 
     _vkSetup=pVkSetup;
     _swapChain=swapchain;
     _model=model;
+    utils::createCommandPool(*_vkSetup,&_renderCommandPool,VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT);
     createDescriptorSetLayout();
     createRenderPass();
+    _backFrameBuffer.initFramebuffer(_vkSetup,_swapChain,_renderCommandPool,_renderPass);
     createPipeline();
 }
 
 void ForwardRendering::cleanupRenderer()
 {
-    vkDestroyPipeline(_vkSetup->_device,_pipeline,nullptr);
-    vkDestroyPipelineLayout(_vkSetup->_device,_pipelineLayout,nullptr);
-    vkDestroyRenderPass(_vkSetup->_device,_renderPass,nullptr);
+    vkDestroyCommandPool(_vkSetup->_device,_renderCommandPool,nullptr);
     
+    vkDestroyDescriptorSetLayout(_vkSetup->_device,_descriptorSetLayout,nullptr);
+    
+    vkDestroyRenderPass(_vkSetup->_device,_renderPass,nullptr);
+    _backFrameBuffer.cleanupFramebuffers();
+    vkDestroyPipelineLayout(_vkSetup->_device,_pipelineLayout,nullptr);
+    vkDestroyPipeline(_vkSetup->_device,_pipeline,nullptr);
 }
 
 void ForwardRendering::createRenderPass(){
@@ -130,6 +136,42 @@ void ForwardRendering::createPipeline()
 
     VkPipelineColorBlendAttachmentState colorBlendAttachment=utils::initPipelineColorBlendAttachmentState(VK_COLOR_COMPONENT_R_BIT|VK_COLOR_COMPONENT_G_BIT|VK_COLOR_COMPONENT_B_BIT|VK_COLOR_COMPONENT_A_BIT,VK_FALSE);
 
+    std::array<VkPipelineShaderStageCreateInfo,2> shaderStage{
+        utils::initPipelineShaderStageCreateInfo(VK_SHADER_STAGE_VERTEX_BIT,vertShaderModule,"main"),
+        utils::initPipelineShaderStageCreateInfo(VK_SHADER_STAGE_FRAGMENT_BIT,fragShaderModule,"main"),
+    };
+
+    VkPipelineVertexInputStateCreateInfo vertexInputInfo=utils::initPipelineVertexInputStateCreateInfo(1,&bindingDescription,
+        static_cast<uint32_t>(attributeDescriptions.size()),attributeDescriptions.data());
+    VkPipelineInputAssemblyStateCreateInfo inputAssembly=utils::initPipelineInputAssemblyStateCreateInfo(VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST,VK_FALSE);
+    VkPipelineViewportStateCreateInfo viewportState=utils::initPipelineViewportStateCreateInfo(1,&viewport,1,&scissor);
+    VkPipelineRasterizationStateCreateInfo rasterizer=utils::initPipelineRasterStateCreateInfo(VK_POLYGON_MODE_FILL,VK_CULL_MODE_BACK_BIT,VK_FRONT_FACE_COUNTER_CLOCKWISE);
+    VkPipelineMultisampleStateCreateInfo multisampling=utils::initPipelineMultisampleStateCreateInfo(VK_SAMPLE_COUNT_1_BIT);
+    VkPipelineColorBlendStateCreateInfo colorBlending=utils::initPipelineColorBlendStateCreateInfo(1,&colorBlendAttachment);
+    VkPipelineDepthStencilStateCreateInfo depthStencil=utils::initPipelineDepthStencilStateCreateInfo(VK_TRUE,VK_TRUE,VK_COMPARE_OP_LESS);
+    VkPipelineLayoutCreateInfo pipelineLayoutInfo=utils::initPipelineLayoutCreateInfo(1,&_descriptorSetLayout);
+
+    if (vkCreatePipelineLayout(_vkSetup->_device,&pipelineLayoutInfo,nullptr,&_pipelineLayout)!=VK_SUCCESS)
+    {
+        throw std::runtime_error("failed to create pipeline layout!");
+    }
+
+    VkGraphicsPipelineCreateInfo pipelineInfo=utils::initGraphicsPipelineCreateInfo(_pipelineLayout,_renderPass);
+    //fixed function pipeline
+    pipelineInfo.pVertexInputState=&vertexInputInfo;
+    pipelineInfo.pInputAssemblyState=&inputAssembly;
+    pipelineInfo.pViewportState=&viewportState;
+    pipelineInfo.pRasterizationState=&rasterizer;
+    pipelineInfo.pMultisampleState=&multisampling;
+    pipelineInfo.pColorBlendState=&colorBlending;
+    pipelineInfo.pDepthStencilState=&depthStencil;
+    pipelineInfo.stageCount=static_cast<uint32_t>(shaderStage.size());
+    pipelineInfo.pStages=shaderStage.data();
+    
+    if (vkCreateGraphicsPipelines(_vkSetup->_device,VK_NULL_HANDLE,1,&pipelineInfo,nullptr,&_pipeline)!=VK_SUCCESS)
+    {
+        throw std::runtime_error("failed to create graphics pipeline!");
+    }
     
     vkDestroyShaderModule(_vkSetup->_device, vertShaderModule,nullptr);
     vkDestroyShaderModule(_vkSetup->_device, fragShaderModule,nullptr);

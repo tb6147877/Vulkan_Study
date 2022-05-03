@@ -10,12 +10,12 @@ class BackFrameBuffer
 {
 public:
     //-Initialisation and cleanup-------------------------------------------
-    void initFramebuffer(VulkanSetup* vkSetup, const SwapChain* swapChain,const VkCommandPool& commandPool);
+    void initFramebuffer(VulkanSetup* vkSetup, const SwapChain* swapChain,const VkCommandPool& commandPool,const VkRenderPass& renderpass);
     void cleanupFramebuffers();
     
 private:
     //-Framebuffer creation--------------------------------------------------
-    void createFrameBuffers(const SwapChain* swapChain);
+    void createFrameBuffers(const SwapChain* swapChain,const VkRenderPass& renderpass);
     
 public:
     //-Members-----------------------------------------------------------------

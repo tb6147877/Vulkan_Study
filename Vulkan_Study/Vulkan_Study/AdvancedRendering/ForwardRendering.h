@@ -1,4 +1,5 @@
 #pragma once
+#include "FrameBuffer.h"
 #include "RenderingBase.h"
 
 class ForwardRendering:public RenderingBase
@@ -21,5 +22,8 @@ public:
     VkRenderPass _renderPass;
     VkPipelineLayout _pipelineLayout;
     VkPipeline _pipeline;
+    VkCommandPool _renderCommandPool;
+    std::vector<VkCommandBuffer> _renderCommandBuffer;
+    BackFrameBuffer _backFrameBuffer;
 };
 

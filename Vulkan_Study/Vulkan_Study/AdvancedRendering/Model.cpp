@@ -6,6 +6,7 @@
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/hash.hpp>
 
+#include "AppConstants.h"
 #include "Assert.h"
 
 //这是顶点去重的hash map所需的hash函数
@@ -135,4 +136,19 @@ std::array<VkVertexInputAttributeDescription,3> Model::getAttributeDescriptions(
     attributeDescriptions[2].offset = offsetof(Vertex, tex);
 
     return attributeDescriptions;
+}
+
+std::vector<Texture> Model::loadModelTextures(VulkanSetup* vkSetup,const VkCommandPool& commandPool, const std::vector<std::string>& paths)
+{
+    if (!_textures.empty())
+    {
+        return _textures;
+    }
+    _textures.resize(paths.size());
+    for (size_t i=0;i<paths.size();i++)
+    {
+        Image img=VulkanImage::loadImageFromFile(paths[i]);
+        _textures[i].createTexture(vkSetup,commandPool,img);
+    }
+    return _textures;
 }

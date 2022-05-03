@@ -6,7 +6,8 @@
 #include <glm/vec3.hpp>
 #include <glm/vec4.hpp>
 
-#include "Image.h"
+
+#include "Texture.h"
 
 class Model
 {
@@ -42,13 +43,16 @@ public:
     //-Binding and attribute descriptions----------------------------------------------
     VkVertexInputBindingDescription getBindingDescriptions(uint32_t primitiveNum);
     std::array<VkVertexInputAttributeDescription,3> getAttributeDescriptions(uint32_t primitiveNum);
+    
+    //-Model Textures-------------------------------------------------------------------
+    std::vector<Texture> loadModelTextures(VulkanSetup* vkSetup, const VkCommandPool& commandPool, const std::vector<std::string>& paths);
 
 private:
     //-Members--------------------------------------------------------------------
     glm::vec3 _center{0.0};
     std::vector<Vertex> _vertices;
     std::vector<uint32_t> _indices;
-    std::vector<Image> _textures;
+    std::vector<Texture> _textures;
     FileExtension _ext;
-    bool loadStatus;
+    bool _loadStatus;
 };

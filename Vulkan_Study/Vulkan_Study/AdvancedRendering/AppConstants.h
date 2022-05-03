@@ -13,6 +13,7 @@ const uint32_t HEIGHT=1080;
 
 //path to the model
 const std::string MODEL_PATH="D:/Project/Vulkan_Study/Vulkan_Study/Models/viking_room.obj";
+const std::vector<std::string> MODEL_TEXTURES_PATH={"D:/Project/Vulkan_Study/Vulkan_Study/Textures/viking_room.png"};
 
 //forward rendering shader path
 const std::string FWD_VERT_SHADER="D:/Project/Vulkan_Study/Vulkan_Study/Shaders/ForwardVert.spv";

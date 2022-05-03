@@ -11,21 +11,31 @@
 void Application::run()
 {
     initWindow();
-    initScene();
     initVulkan();
+    initScene();
+    
 }
 
 void Application::cleanup()
 {
-    delete _mainRenderer;
+    _basicRenderer->cleanupRenderer();
+    delete _basicRenderer;
+    _swapChain.cleanupSwapChain();
+    _vkSetup.cleanupSetup();
+
+
+    
+    //destroy the window
+    glfwDestroyWindow(_window);
+    //terminate glfw
+    glfwTerminate();
 }
 
 void Application::initVulkan()
 {
     _vkSetup.initSetup(_window);
     _swapChain.initSwapchain(&_vkSetup);
-    utils::createCommandPool(_vkSetup,&_renderCommandPool,VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT);
-
+    _basicRenderer = new ForwardRendering();
     _basicRenderer->initRenderer(&_vkSetup,&_swapChain,&_model);
    
     
@@ -35,10 +45,11 @@ void Application::initScene()
 {
     _camera=Camera({0.0f,0.0f,0.0f},2.0f,10.0f);
     _model.loadModel(MODEL_PATH);
+    _model.loadModelTextures(&_vkSetup,_basicRenderer->_renderCommandPool,MODEL_TEXTURES_PATH);
     _pointLights[0]= { {5.0f, -5.0f, 0.0f, 0.0f}, {0.5f, 0.5f, 0.5f, 40.0f} };
     _spotLight={{5.0f,-5.0f,0.0f},0.1f,40.0f};
-    _basicRenderer = new ForwardRendering();
-    //_mainRenderer=new DeferredRendering();
+    
+   
 }
 
 void Application::initWindow()

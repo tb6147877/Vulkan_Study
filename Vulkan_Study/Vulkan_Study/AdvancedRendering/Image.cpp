@@ -5,10 +5,19 @@
 #include <stb_image.h>
 #include <stdexcept>
 
+#include "Print.h"
 #include "Utils.h"
 
 void VulkanImage::createImage(const VulkanSetup* vkSetup, const VkCommandPool& commandPool, const ImageCreateInfo& info)
 {
+    //check whether the format is supported
+    VulkanImage::ImageFormatSupportDetails supportDetails=queryFormatSupport(vkSetup->_physicalDevice,info.format,VK_IMAGE_TYPE_2D,
+        info.tiling,info.usage,info.flags);
+    if (supportDetails.properties.maxArrayLayers==VK_FORMAT_UNDEFINED)
+    {
+        throw std::runtime_error("image format undefined!");
+    }
+    
     //create image ready to accept data on device
     VkImageCreateInfo imageInfo{};
     imageInfo.sType=VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
@@ -211,7 +220,7 @@ VulkanImage::ImageFormatSupportDetails VulkanImage::queryFormatSupport(VkPhysica
     VulkanImage::ImageFormatSupportDetails details={format,{}};
     if (vkGetPhysicalDeviceImageFormatProperties(device,format,type,tiling,usage,flags,&details.properties)!=VK_SUCCESS)
     {
-        throw std::runtime_error("format is not support!");
+        PRINT("format %i is not support!\n",format);
     }
     return details;
 }

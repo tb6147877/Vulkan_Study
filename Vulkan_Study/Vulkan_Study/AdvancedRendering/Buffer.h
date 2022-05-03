@@ -22,6 +22,7 @@ struct UniformBase
 class VulkanBuffer
 {
     //-Buffer operation info structs-----------------------------------------------------------
+public:
     struct CreateInfo
     {
         VkDeviceSize size=0;

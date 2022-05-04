@@ -18,6 +18,9 @@ void ForwardRendering::initRenderer(VulkanSetup* pVkSetup,SwapChain* swapchain, 
     createRenderPass();
     _backFrameBuffer.initFramebuffer(_vkSetup,_swapChain,_renderCommandPool,_renderPass);
     createPipeline();
+    createUniformBuffers();
+    createDescriptorPool();
+    //createDescriptorSets();
 }
 
 void ForwardRendering::cleanupRenderer()
@@ -200,4 +203,107 @@ void ForwardRendering::createDescriptorSetLayout()
     {
         throw std::runtime_error("failed to create descriptor set layout");
     }
+}
+
+void ForwardRendering::createUniformBuffers()
+{
+    VulkanBuffer::createUniformBuffer<UniformBufferObjectVert>(_vkSetup,_swapChain->_images.size(),&_vertUniformBuffer,
+        VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT|VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+    VulkanBuffer::createUniformBuffer<UniformBufferObjectFrag>(_vkSetup,_swapChain->_images.size(),&_fragUniformBuffer,
+        VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT|VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+}
+void ForwardRendering::createDescriptorPool(){
+    uint32_t swapChainImageCount=static_cast<uint32_t>(_swapChain->_images.size());
+
+    VkDescriptorPoolSize poolSizes[]={
+        { VK_DESCRIPTOR_TYPE_SAMPLER,                DESCRIPTOR_POOL_NUM },
+        { VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, DESCRIPTOR_POOL_NUM },
+        { VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,          DESCRIPTOR_POOL_NUM },
+        { VK_DESCRIPTOR_TYPE_STORAGE_IMAGE,          DESCRIPTOR_POOL_NUM },
+        { VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER,   DESCRIPTOR_POOL_NUM },
+        { VK_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER,   DESCRIPTOR_POOL_NUM },
+        { VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,         DESCRIPTOR_POOL_NUM },
+        { VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,         DESCRIPTOR_POOL_NUM },
+        { VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, DESCRIPTOR_POOL_NUM },
+        { VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC, DESCRIPTOR_POOL_NUM },
+        { VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT,       DESCRIPTOR_POOL_NUM }
+    };
+
+    VkDescriptorPoolCreateInfo poolInfo{};
+    poolInfo.sType=VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+    poolInfo.flags=VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT;// determines if individual descriptor sets can be freed or not
+    poolInfo.maxSets=DESCRIPTOR_POOL_NUM*swapChainImageCount;
+    poolInfo.poolSizeCount=static_cast<uint32_t>(sizeof(poolSizes)/sizeof(VkDescriptorPoolSize));
+    poolInfo.pPoolSizes=poolSizes;
+
+    if (vkCreateDescriptorPool(_vkSetup->_device,&poolInfo,nullptr,&_descriptorPool)!=VK_SUCCESS)
+    {
+        throw std::runtime_error("failed to create descriptor pool!");
+    }
+}
+
+void ForwardRendering::createDescriptorSets()
+{
+    std::vector<VkWriteDescriptorSet> writeDescriptorSets;
+    std::vector<VkDescriptorSetLayout> layouts(_swapChain->_images.size(),_descriptorSetLayout);
+    VkDescriptorSetAllocateInfo allocInfo=utils::initDescriptorSetAllocInfo(_descriptorPool,static_cast<uint32_t>(layouts.size()),layouts.data());
+    _descriptorSets.resize(layouts.size());
+
+    if (vkAllocateDescriptorSets(_vkSetup->_device,&allocInfo,_descriptorSets.data())!=VK_SUCCESS)
+    {
+        throw std::runtime_error("failed to allocate descriptor sets!");
+    }
+    
+
+    VkDescriptorImageInfo texDescriptor{};
+    texDescriptor.imageLayout=VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+    texDescriptor.imageView=_model->_textures[0]._textureImageView;
+    texDescriptor.sampler=_model->_textures[0]._textureSampler;
+    
+    
+    for (size_t i=0;i<_descriptorSets.size();i++)
+    {
+        VkDescriptorBufferInfo vertDescriptor{};
+        vertDescriptor.buffer=_vertUniformBuffer._buffer;
+        vertDescriptor.offset=sizeof(UniformBufferObjectVert)*i;
+        vertDescriptor.range=sizeof(UniformBufferObjectVert);
+        if (!_vkSetup->isUniformBufferOffsetValid(vertDescriptor.offset))
+        {
+            throw std::runtime_error("vertex uniform buffer do not fit data alignment!");
+        }
+
+        VkDescriptorBufferInfo fragDescriptor{};
+        fragDescriptor.buffer=_fragUniformBuffer._buffer;
+        fragDescriptor.offset=sizeof(UniformBufferObjectFrag)*i;
+        fragDescriptor.range=sizeof(UniformBufferObjectFrag);
+        if (!_vkSetup->isUniformBufferOffsetValid(fragDescriptor.offset))
+        {
+            throw std::runtime_error("fragment uniform buffer do not fit data alignment!");
+        }
+        
+
+        writeDescriptorSets={
+            utils::initWriteDescriptorSet(_descriptorSets[i],0,VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,&vertDescriptor),
+            utils::initWriteDescriptorSet(_descriptorSets[i],1,VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,&texDescriptor),
+            utils::initWriteDescriptorSet(_descriptorSets[i],2,VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,&fragDescriptor)
+        };
+
+        vkUpdateDescriptorSets(_vkSetup->_device,static_cast<uint32_t>(writeDescriptorSets.size()),writeDescriptorSets.data(),0,nullptr);
+    }
+}
+
+void ForwardRendering::updateVertUniformBuffer(uint32_t imgIndex, const UniformBufferObjectVert& ubo)
+{
+    void* data;
+    vkMapMemory(_vkSetup->_device,_vertUniformBuffer._memory,sizeof(ubo)*imgIndex,sizeof(ubo),0,&data);
+    memcpy(data,&ubo,sizeof(ubo));
+    vkUnmapMemory(_vkSetup->_device,_vertUniformBuffer._memory);
+}
+
+void ForwardRendering::updateFragUniformBuffer(uint32_t imgIndex, const UniformBufferObjectFrag& ubo)
+{
+    void* data;
+    vkMapMemory(_vkSetup->_device,_fragUniformBuffer._memory,sizeof(ubo)*imgIndex,sizeof(ubo),0,&data);
+    memcpy(data,&ubo,sizeof(ubo));
+    vkUnmapMemory(_vkSetup->_device,_fragUniformBuffer._memory);
 }

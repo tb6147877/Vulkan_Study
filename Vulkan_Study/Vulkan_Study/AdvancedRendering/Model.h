@@ -47,12 +47,18 @@ public:
     //-Model Textures-------------------------------------------------------------------
     std::vector<Texture> loadModelTextures(VulkanSetup* vkSetup, const VkCommandPool& commandPool, const std::vector<std::string>& paths);
 
+    //-Vertex buffer generate----------------------------------------------------------
+    void generateModelVertexBuffer(VulkanSetup* vkSetup, const VkCommandPool& commandPool);
+
 private:
     //-Members--------------------------------------------------------------------
     glm::vec3 _center{0.0};
     std::vector<Vertex> _vertices;
     std::vector<uint32_t> _indices;
+    
+
+public:
     std::vector<Texture> _textures;
-    FileExtension _ext;
-    bool _loadStatus;
+    VulkanBuffer _vertexBuffer;
+    VulkanBuffer _indexBuffer;
 };

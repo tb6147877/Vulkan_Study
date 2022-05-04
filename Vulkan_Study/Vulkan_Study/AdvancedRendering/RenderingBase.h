@@ -18,6 +18,10 @@ public:
 
     //-Descriptor initialisation functions--------------------------------------------
     virtual void createDescriptorSetLayout()=0;
+    virtual void createUniformBuffers()=0;
+    virtual void createDescriptorPool()=0;
+    virtual void createDescriptorSets()=0;
+    
     
 public:
     //-Members-----------------------------------------------------------

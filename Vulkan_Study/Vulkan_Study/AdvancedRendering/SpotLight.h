@@ -5,6 +5,12 @@
 #include <glm/ext/matrix_clip_space.hpp>
 #include <glm/ext/matrix_transform.hpp>
 
+struct PointLight
+{
+    glm::vec4 pos;
+    glm::vec4 color_radius;
+};
+
 
 class SpotLight
 {

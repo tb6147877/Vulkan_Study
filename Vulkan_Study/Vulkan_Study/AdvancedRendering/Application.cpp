@@ -13,7 +13,7 @@ void Application::run()
     initWindow();
     initVulkan();
     initScene();
-    
+    _basicRenderer->createDescriptorSets();
 }
 
 void Application::cleanup()
@@ -46,6 +46,7 @@ void Application::initScene()
     _camera=Camera({0.0f,0.0f,0.0f},2.0f,10.0f);
     _model.loadModel(MODEL_PATH);
     _model.loadModelTextures(&_vkSetup,_basicRenderer->_renderCommandPool,MODEL_TEXTURES_PATH);
+    _model.generateModelVertexBuffer(&_vkSetup,_basicRenderer->_renderCommandPool);
     _pointLights[0]= { {5.0f, -5.0f, 0.0f, 0.0f}, {0.5f, 0.5f, 0.5f, 40.0f} };
     _spotLight={{5.0f,-5.0f,0.0f},0.1f,40.0f};
     

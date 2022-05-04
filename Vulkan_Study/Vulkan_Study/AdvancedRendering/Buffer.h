@@ -63,7 +63,7 @@ public:
     VkDeviceMemory _memory=nullptr;
 };
 
-//Template definitions
+    //Template definitions
     template<typename T>
     void VulkanBuffer::createUniformBuffer(const VulkanSetup* vkSetup, size_t imagesSize, VulkanBuffer* buffer, VkMemoryPropertyFlags proerties)
     {

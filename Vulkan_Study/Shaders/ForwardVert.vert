@@ -2,7 +2,7 @@
 
 
 //Uniform
-layout (binding=0) uniform UniformBufferObject{
+layout (binding=0) uniform UniformBufferObjectVert{
     mat4 model;
     mat4 view;
     mat4 proj;

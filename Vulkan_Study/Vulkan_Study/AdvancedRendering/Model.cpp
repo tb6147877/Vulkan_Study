@@ -82,6 +82,8 @@ void Model::loadObjModel(const std::string& path)
     }
     //now compute the center by dividing by the number of vertices in the model
     _center/=(float)_vertices.size();
+
+    
 }
 void Model::loadGltfModel(const std::string& path)
 {
@@ -151,4 +153,19 @@ std::vector<Texture> Model::loadModelTextures(VulkanSetup* vkSetup,const VkComma
         _textures[i].createTexture(vkSetup,commandPool,img);
     }
     return _textures;
+}
+
+void Model::generateModelVertexBuffer(VulkanSetup* vkSetup, const VkCommandPool& commandPool)
+{
+    //vertex buffer
+    VulkanBuffer::createDeviceLocalBuffer(vkSetup,commandPool,
+        Buffer{(unsigned char*)_vertices.data(),_vertices.size()*sizeof(Model::Vertex)},
+        &_vertexBuffer,VK_BUFFER_USAGE_VERTEX_BUFFER_BIT
+        );
+
+    //index buffer
+    VulkanBuffer::createDeviceLocalBuffer(vkSetup,commandPool,
+        Buffer{(unsigned char*)_indices.data(),_indices.size()*sizeof(uint32_t)},
+        &_indexBuffer,VK_BUFFER_USAGE_INDEX_BUFFER_BIT
+        );
 }

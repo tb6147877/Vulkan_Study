@@ -145,6 +145,54 @@ namespace utils
         return descSetLayoutBinding;
     }
 
+    VkDescriptorSetAllocateInfo initDescriptorSetAllocInfo(
+        VkDescriptorPool pool,
+        uint32_t count,
+        VkDescriptorSetLayout* pDesSetLayouts
+    )
+    {
+        VkDescriptorSetAllocateInfo descSetAllocInfo{};
+        descSetAllocInfo.sType=VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+        descSetAllocInfo.descriptorPool=pool;
+        descSetAllocInfo.descriptorSetCount=count;
+        descSetAllocInfo.pSetLayouts=pDesSetLayouts;
+        return  descSetAllocInfo;
+    }
+
+    VkWriteDescriptorSet initWriteDescriptorSet(
+        VkDescriptorSet dst,
+        uint32_t binding,
+        VkDescriptorType type,
+        VkDescriptorBufferInfo* pBufferInfo
+    )
+    {
+        VkWriteDescriptorSet writeDescriptorSet{};
+        writeDescriptorSet.sType=VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+        writeDescriptorSet.descriptorType=type;
+        writeDescriptorSet.dstSet=dst;
+        writeDescriptorSet.dstBinding=binding;
+        writeDescriptorSet.descriptorCount=1;
+        writeDescriptorSet.pBufferInfo=pBufferInfo;
+        return writeDescriptorSet;
+    }
+
+    VkWriteDescriptorSet initWriteDescriptorSet(
+        VkDescriptorSet dst,
+        uint32_t binding,
+        VkDescriptorType type,
+        VkDescriptorImageInfo* pImageInfo
+    )
+    {
+        VkWriteDescriptorSet writeDescriptorSet{};
+        writeDescriptorSet.sType=VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+        writeDescriptorSet.descriptorType=type;
+        writeDescriptorSet.dstSet=dst;
+        writeDescriptorSet.dstBinding=binding;
+        writeDescriptorSet.descriptorCount=1;
+        writeDescriptorSet.pImageInfo=pImageInfo;
+        return writeDescriptorSet;
+    }
+
     VkImageViewCreateInfo initImageViewCreateInfo(VkImage image,VkImageViewType type, VkFormat format,
         VkComponentMapping componentMapping, VkImageSubresourceRange subResourceRange)
     {

@@ -9,9 +9,10 @@ struct PointLight
     vec4 color_radius;
 };
 
-layout (binding=2) uniform UniformBufferObject{
+layout (binding=2) uniform UniformBufferObjectFrag{
     PointLight[1] lights;
     vec4 viewPos;
+    vec4 gap;
 };
 
 //input from previous shader stage

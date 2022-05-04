@@ -21,6 +21,10 @@ public:
     //-Swap chain related--------------------------------------------------------------------------
     SwapChainSupportDetails querySwapchainSupport(VkPhysicalDevice device);
 
+    //-Physical device limit query--------------------------------------------------------
+    VkBool32 isUniformBufferOffsetValid(VkDeviceSize size);
+    
+
 public:
     //-Members------------------------------------------------------------------------
     GLFWwindow* _window;

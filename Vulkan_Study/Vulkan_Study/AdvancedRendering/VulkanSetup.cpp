@@ -324,6 +324,17 @@ VulkanSetup::SwapChainSupportDetails VulkanSetup::querySwapchainSupport(VkPhysic
 	return details;
 }
 
+VkBool32 VulkanSetup::isUniformBufferOffsetValid(VkDeviceSize size)
+{
+	if (!_setupComplete)
+	{
+		throw std::runtime_error("vulkan has not been built!");
+	}
+	auto min=_deviceProperties.limits.minUniformBufferOffsetAlignment;
+	VkDeviceSize num=size%min;
+	return num==0;
+}
+
 void VulkanSetup::createLogicalDevice()
 {
 	//query the queue families available on the device

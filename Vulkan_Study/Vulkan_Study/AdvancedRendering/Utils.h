@@ -17,7 +17,7 @@ const bool enableVerboseValidation=true;
 const bool enableVerboseValidation=false;
 #endif
 
-
+const uint32_t DESCRIPTOR_POOL_NUM=10;
 
 const std::vector<const char*> validationLayers={"VK_LAYER_KHRONOS_validation"};
 const std::vector<const char*> deviceExtensions={VK_KHR_SWAPCHAIN_EXTENSION_NAME};
@@ -133,6 +133,26 @@ namespace utils
         uint32_t binding,
         VkDescriptorType type,
         VkPipelineStageFlags flags=0
+    );
+
+    VkDescriptorSetAllocateInfo initDescriptorSetAllocInfo(
+        VkDescriptorPool pool,
+        uint32_t count,
+        VkDescriptorSetLayout* pDesSetLayouts
+    );
+
+    VkWriteDescriptorSet initWriteDescriptorSet(
+        VkDescriptorSet dst,
+        uint32_t binding,
+        VkDescriptorType type,
+        VkDescriptorBufferInfo* pBufferInfo
+    );
+
+    VkWriteDescriptorSet initWriteDescriptorSet(
+        VkDescriptorSet dst,
+        uint32_t binding,
+        VkDescriptorType type,
+        VkDescriptorImageInfo* pImageInfo
     );
 
     //-Image structs-------------------------------------------------------------------

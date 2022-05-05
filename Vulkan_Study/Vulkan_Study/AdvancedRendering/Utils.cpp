@@ -128,7 +128,15 @@ namespace utils
     void createCommandBuffers(const VulkanSetup& vkSetup, uint32_t count, VkCommandBuffer* commandBuffers, VkCommandPool& commandPool)
     {
         VkCommandBufferAllocateInfo allocInfo{};
-        
+        allocInfo.sType=VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+        allocInfo.commandPool=commandPool;
+        allocInfo.level=VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+        allocInfo.commandBufferCount=count;
+
+        if (vkAllocateCommandBuffers(vkSetup._device,&allocInfo,commandBuffers)!=VK_SUCCESS)
+        {
+            throw std::runtime_error("failed to create command buffers");
+        }
     }
 
     VkDescriptorSetLayoutBinding initDescriptorSetLayoutBinding(
@@ -378,6 +386,14 @@ namespace utils
         info.sType=VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
         info.pDynamicStates=pDynamicStates;
         info.dynamicStateCount=dynamicStateCount;
+        info.flags=flags;
+        return info;
+    }
+
+    VkCommandBufferBeginInfo initCommandBufferBeginInfo(VkCommandBufferResetFlags flags)
+    {
+        VkCommandBufferBeginInfo info{};
+        info.sType=VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
         info.flags=flags;
         return info;
     }

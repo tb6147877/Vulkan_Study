@@ -17,6 +17,8 @@ const bool enableVerboseValidation=true;
 const bool enableVerboseValidation=false;
 #endif
 
+const size_t MAX_FRAMES_IN_FLIGHT = 2;//todo:why 2?
+
 const uint32_t DESCRIPTOR_POOL_NUM=10;
 
 const std::vector<const char*> validationLayers={"VK_LAYER_KHRONOS_validation"};
@@ -154,6 +156,10 @@ namespace utils
         VkDescriptorType type,
         VkDescriptorImageInfo* pImageInfo
     );
+
+    //-Command buffer structs---------------------------------------------------------
+    VkCommandBufferBeginInfo initCommandBufferBeginInfo(VkCommandBufferResetFlags flags=0);
+    
 
     //-Image structs-------------------------------------------------------------------
     VkImageViewCreateInfo initImageViewCreateInfo(VkImage image,VkImageViewType type, VkFormat format,

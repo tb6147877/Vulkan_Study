@@ -6,6 +6,7 @@
 #include "DepthResource.h"
 #include "Shader.h"
 #include "Utils.h"
+#include "Camera.h"
 
 
 void ForwardRendering::initRenderer(VulkanSetup* pVkSetup,SwapChain* swapchain, Model* model)
@@ -13,14 +14,16 @@ void ForwardRendering::initRenderer(VulkanSetup* pVkSetup,SwapChain* swapchain, 
     _vkSetup=pVkSetup;
     _swapChain=swapchain;
     _model=model;
-    utils::createCommandPool(*_vkSetup,&_renderCommandPool,VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT);
+    createCommandPool();
     createDescriptorSetLayout();
     createRenderPass();
     _backFrameBuffer.initFramebuffer(_vkSetup,_swapChain,_renderCommandPool,_renderPass);
     createPipeline();
     createUniformBuffers();
     createDescriptorPool();
-    //createDescriptorSets();
+    createCommandBuffer();
+    createSyncObjects();
+    
 }
 
 void ForwardRendering::cleanupRenderer()
@@ -47,7 +50,7 @@ void ForwardRendering::createRenderPass(){
     colorAttachment.stencilLoadOp=VK_ATTACHMENT_LOAD_OP_DONT_CARE;
     colorAttachment.stencilStoreOp=VK_ATTACHMENT_STORE_OP_DONT_CARE;
     colorAttachment.initialLayout=VK_IMAGE_LAYOUT_UNDEFINED;
-    colorAttachment.finalLayout=VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+    colorAttachment.finalLayout=VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;//if this image is go to swap chain, it must be this option
 
     //specify a depth attachment to the render pass
     VkAttachmentDescription depthAttachment{};
@@ -212,6 +215,7 @@ void ForwardRendering::createUniformBuffers()
     VulkanBuffer::createUniformBuffer<UniformBufferObjectFrag>(_vkSetup,_swapChain->_images.size(),&_fragUniformBuffer,
         VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT|VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
 }
+
 void ForwardRendering::createDescriptorPool(){
     uint32_t swapChainImageCount=static_cast<uint32_t>(_swapChain->_images.size());
 
@@ -280,7 +284,6 @@ void ForwardRendering::createDescriptorSets()
         {
             throw std::runtime_error("fragment uniform buffer do not fit data alignment!");
         }
-        
 
         writeDescriptorSets={
             utils::initWriteDescriptorSet(_descriptorSets[i],0,VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,&vertDescriptor),
@@ -290,6 +293,21 @@ void ForwardRendering::createDescriptorSets()
 
         vkUpdateDescriptorSets(_vkSetup->_device,static_cast<uint32_t>(writeDescriptorSets.size()),writeDescriptorSets.data(),0,nullptr);
     }
+}
+
+void ForwardRendering::updateUniformBuffers(uint32_t curImage)
+{
+    glm::mat4 proj=_camera->getProjectionMatrix(_swapChain->_extent.width/(float)_swapChain->_extent.height,0.1f,40.0f);
+    proj[1][1]*=-1.0f;//y coordinates inverted, vulkan origin top left vs opengl bottom left
+    glm::mat4 model=glm::mat4(1.0f);
+   
+
+    UniformBufferObjectVert vertUBO{};
+    vertUBO.model=model;
+    vertUBO.view=_camera->getViewMatrix();
+    vertUBO.proj=proj;
+
+    updateVertUniformBuffer(curImage,vertUBO);
 }
 
 void ForwardRendering::updateVertUniformBuffer(uint32_t imgIndex, const UniformBufferObjectVert& ubo)
@@ -306,4 +324,189 @@ void ForwardRendering::updateFragUniformBuffer(uint32_t imgIndex, const UniformB
     vkMapMemory(_vkSetup->_device,_fragUniformBuffer._memory,sizeof(ubo)*imgIndex,sizeof(ubo),0,&data);
     memcpy(data,&ubo,sizeof(ubo));
     vkUnmapMemory(_vkSetup->_device,_fragUniformBuffer._memory);
+}
+
+void ForwardRendering::createCommandPool(){
+    utils::createCommandPool(*_vkSetup,&_renderCommandPool,VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT);
+}
+
+void ForwardRendering::createCommandBuffer(){
+    _renderCommandBuffer.resize(_swapChain->_images.size());
+    utils::createCommandBuffers(*_vkSetup,static_cast<uint32_t>(_renderCommandBuffer.size()),_renderCommandBuffer.data(),_renderCommandPool);
+}
+
+void ForwardRendering::createSyncObjects()
+{
+    _imageAvailableSemaphores.resize(MAX_FRAMES_IN_FLIGHT);
+    _renderFinishedSemaphores.resize(MAX_FRAMES_IN_FLIGHT);
+
+    _inFlightFences.resize(MAX_FRAMES_IN_FLIGHT);
+    _imagesInFlight.resize(_swapChain->_images.size(),VK_NULL_HANDLE);
+
+    VkSemaphoreCreateInfo semaphoreInfo{};
+    semaphoreInfo.sType=VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+
+    VkFenceCreateInfo fenceInfo{};
+    fenceInfo.sType=VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+    fenceInfo.flags=VK_FENCE_CREATE_SIGNALED_BIT;
+
+    for (size_t i=0;i<MAX_FRAMES_IN_FLIGHT;i++)
+    {
+        if (vkCreateSemaphore(_vkSetup->_device,&semaphoreInfo,nullptr,&_imageAvailableSemaphores[i])!=VK_SUCCESS
+            ||vkCreateSemaphore(_vkSetup->_device,&semaphoreInfo,nullptr,&_renderFinishedSemaphores[i])!=VK_SUCCESS)
+        {
+            throw std::runtime_error("failed to create semaphores!");
+        }
+
+        if (vkCreateFence(_vkSetup->_device,&fenceInfo,nullptr,&_inFlightFences[i])!=VK_SUCCESS)
+        {
+            throw std::runtime_error("failed to create fences!");
+        }
+    }
+}
+
+void ForwardRendering::recordCommandBuffers()
+{
+    for (size_t i=0;i<_swapChain->_images.size();i++)
+    {
+        recordRenderCommandBuffer(i);
+    }
+}
+
+void ForwardRendering::recordRenderCommandBuffer(uint32_t cmdBufferIndex)
+{
+    VkCommandBufferBeginInfo commandBufferBeginInfo=utils::initCommandBufferBeginInfo();
+
+    //implicitly resets cmd buffer
+    if (vkBeginCommandBuffer(_renderCommandBuffer[cmdBufferIndex],&commandBufferBeginInfo)!=VK_SUCCESS)
+    {
+        throw std::runtime_error("failed to begin recording command buffer!");
+    }
+
+    std::array<VkClearValue,2> clearValues{};
+    clearValues[0].color={0.0f,0.0f,0.0f,1.0f};
+    clearValues[1].depthStencil={1.0f,0};
+
+    VkRenderPassBeginInfo renderPassBeginInfo{};
+    renderPassBeginInfo.sType=VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+    renderPassBeginInfo.renderPass=_renderPass;
+    renderPassBeginInfo.framebuffer=_backFrameBuffer._framebuffers[cmdBufferIndex];
+    renderPassBeginInfo.renderArea.offset={0,0};
+    renderPassBeginInfo.renderArea.extent=_swapChain->_extent;
+    renderPassBeginInfo.clearValueCount=static_cast<uint32_t>(clearValues.size());
+    renderPassBeginInfo.pClearValues=clearValues.data();
+
+    //begin recording
+    vkCmdBeginRenderPass(_renderCommandBuffer[cmdBufferIndex],&renderPassBeginInfo,VK_SUBPASS_CONTENTS_INLINE);
+
+    //bind pipeline
+    vkCmdBindPipeline(_renderCommandBuffer[cmdBufferIndex],VK_PIPELINE_BIND_POINT_GRAPHICS,_pipeline);
+
+    //bind vertex buffer
+    VkDeviceSize offset=0;
+    vkCmdBindVertexBuffers(_renderCommandBuffer[cmdBufferIndex],0,1,&_model->_vertexBuffer._buffer,&offset);
+
+    //bind index buffer
+    vkCmdBindIndexBuffer(_renderCommandBuffer[cmdBufferIndex],_model->_indexBuffer._buffer,0,VK_INDEX_TYPE_UINT32);
+
+    //bind descriptor
+    vkCmdBindDescriptorSets(_renderCommandBuffer[cmdBufferIndex],VK_PIPELINE_BIND_POINT_GRAPHICS,_pipelineLayout,0,1,&_descriptorSets[cmdBufferIndex],0,nullptr);
+
+    //draw
+    vkCmdDrawIndexed(_renderCommandBuffer[cmdBufferIndex], _model->getIndicesNum(),1,0,0,0);
+    
+    //end recording
+    vkCmdEndRenderPass(_renderCommandBuffer[cmdBufferIndex]);
+
+    if (vkEndCommandBuffer(_renderCommandBuffer[cmdBufferIndex])!=VK_SUCCESS)
+    {
+        throw std::runtime_error("failed to end recording command buffer!");
+    }
+}
+
+void ForwardRendering::drawFrame()
+{
+    // will acquire an image from swap chain, exec commands in command buffer with images as attachments in the 
+    // frameBuffer return the image to the swap buffer. These tasks are started simultaneously but executed 
+    // asynchronously. However we want these to occur in sequence because each relies on the previous task success
+    // For syncing we can use semaphores or fences and coordinate operations by having one operation signal another 
+    // and another wait for a fence or semaphore to go from unsignaled to signaled.
+    // We can access fence state with vkWaitForFences but not semaphores.
+    // Fences are mainly for syncing app with rendering operations, used here to synchronise the frame rate.
+    // Semaphores are for syncing operations within or across cmd queues. 
+    // We want to sync queue operations to draw cmds and presentation, and we want to make sure the offscreen cmds
+    // have finished before the final image composition using semaphores. 
+    /*************************************************************************************************************/
+
+    vkWaitForFences(_vkSetup->_device,1,&_inFlightFences[_currentFrame],VK_TRUE,UINT64_MAX);
+
+    VkResult result=vkAcquireNextImageKHR(_vkSetup->_device,_swapChain->_swapChain,UINT64_MAX,
+        _imageAvailableSemaphores[_currentFrame],VK_NULL_HANDLE,&_scImageIndex);
+
+    if (result==VK_ERROR_OUT_OF_DATE_KHR)
+    {
+        //todo: recreate swapchain
+        return;
+    }else if (result!=VK_SUCCESS&&result!=VK_SUBOPTIMAL_KHR)
+    {
+        throw std::runtime_error("failed to acquire swap chain image!");
+    }
+
+    if (_imagesInFlight[_scImageIndex]!=VK_NULL_HANDLE)//check is a previous frame is using this image
+    {
+        vkWaitForFences(_vkSetup->_device,1,&_imagesInFlight[_scImageIndex],VK_TRUE,UINT64_MAX);
+    }
+
+    _imagesInFlight[_scImageIndex]=_inFlightFences[_currentFrame];//set image as in use by current frame
+
+    updateUniformBuffers(_scImageIndex);
+
+    //recordRenderCommandBuffer(_scImageIndex);
+
+    VkPipelineStageFlags waitStage=VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+    VkSubmitInfo submitInfo{};
+    submitInfo.sType=VK_STRUCTURE_TYPE_SUBMIT_INFO;
+    submitInfo.pWaitDstStageMask=&waitStage;
+
+    submitInfo.waitSemaphoreCount=1;
+    submitInfo.pWaitSemaphores=&_imageAvailableSemaphores[_currentFrame];
+
+    submitInfo.commandBufferCount=1;
+    submitInfo.pCommandBuffers=&_renderCommandBuffer[_currentFrame];
+
+    submitInfo.signalSemaphoreCount=1;
+    submitInfo.pSignalSemaphores=&_renderFinishedSemaphores[_currentFrame];
+
+    vkResetFences(_vkSetup->_device,1,&_inFlightFences[_currentFrame]);
+
+    if (vkQueueSubmit(_vkSetup->_graphicsQueue,1,&submitInfo,_inFlightFences[_currentFrame])!=VK_SUCCESS)
+    {
+        throw std::runtime_error("failed to submit draw command buffer!");
+    }
+    
+    VkPresentInfoKHR presentInfo{};
+    presentInfo.sType=VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
+
+    presentInfo.waitSemaphoreCount=1;
+    presentInfo.pWaitSemaphores=&_renderFinishedSemaphores[_currentFrame];
+
+    presentInfo.swapchainCount=1;
+    presentInfo.pSwapchains=&_swapChain->_swapChain;
+    presentInfo.pImageIndices=&_scImageIndex;
+
+    result=vkQueuePresentKHR(_vkSetup->_presentQueue,&presentInfo);
+
+   
+    if (result==VK_ERROR_OUT_OF_DATE_KHR||result==VK_SUBOPTIMAL_KHR||_frameBufferResized)
+    {
+        _frameBufferResized=false;
+        //todo:recreate swap chain
+    }else if (result!=VK_SUCCESS)
+    {
+        throw std::runtime_error("failed to present swap chain image!");
+    }
+    
+
+    _currentFrame=(_currentFrame+1)%MAX_FRAMES_IN_FLIGHT;
+    
 }

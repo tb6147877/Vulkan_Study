@@ -2,8 +2,8 @@
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
 
-#define GLM_FORCE_RADIANS//使用弧度作为参数，避免混淆
-#define GLM_FORCE_DEPTH_ZERO_TO_ONE//vulkan里深度值是0-1
+//#define GLM_FORCE_RADIANS//使用弧度作为参数，避免混淆
+//#define GLM_FORCE_DEPTH_ZERO_TO_ONE//vulkan里深度值是0-1
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 

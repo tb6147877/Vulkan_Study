@@ -9,6 +9,8 @@
 #include "Model.h"
 //#include "DeferredRendering.h"
 
+#include <chrono>
+
 #include "SwapChain.h"
 #include "Texture.h"
 
@@ -22,6 +24,7 @@ private:
     //-Initialise all our data for rendering-----------------------------------------------------
     void initVulkan();
     void initScene();
+    void prepareRendering();
 
     //-Initialise glfw window----------------------------------------------------------------------
     void initWindow();
@@ -29,7 +32,12 @@ private:
     //-Window/Input callbacks--------------------------------------------------------------------
     static void framebufferResizeCallback(GLFWwindow* window, int width, int height);
 
+    //The main loop----------------------------------------------------------------------------
+    void mainLoop();
 
+    //-Per frame functions-------------------------------------------------------------------
+    int processKeyInput();
+    
     //-End of application cleanup-----------------------------------------------------------
     void cleanup();
 private:
@@ -44,8 +52,9 @@ private:
     //RenderingBase* _mainRenderer;
     SwapChain _swapChain;
 
-    
-    
+    std::chrono::steady_clock::time_point _prevTime;
+    std::chrono::steady_clock::time_point _currTime;
+    float _deltaTime;
 
     bool _framebufferResized=false;
     

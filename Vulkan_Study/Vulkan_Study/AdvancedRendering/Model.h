@@ -50,6 +50,8 @@ public:
     //-Vertex buffer generate----------------------------------------------------------
     void generateModelVertexBuffer(VulkanSetup* vkSetup, const VkCommandPool& commandPool);
 
+    uint32_t getIndicesNum(){return static_cast<uint32_t>(_indices.size());}
+
 private:
     //-Members--------------------------------------------------------------------
     glm::vec3 _center{0.0};

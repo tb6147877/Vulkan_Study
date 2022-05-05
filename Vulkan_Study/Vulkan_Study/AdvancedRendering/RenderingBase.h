@@ -21,12 +21,24 @@ public:
     virtual void createUniformBuffers()=0;
     virtual void createDescriptorPool()=0;
     virtual void createDescriptorSets()=0;
-    
-    
+    virtual void updateUniformBuffers(uint32_t curImage)=0;
+
+    //-Command buffer initialisation functions
+    virtual void createCommandPool()=0;
+    virtual void createCommandBuffer()=0;
+    virtual void recordCommandBuffers()=0;
+
+    //-Sync structures-------------------------------------------------------------------
+    virtual void createSyncObjects()=0;
+
+    //-Draw Frame-------------------------------------------------------
+    virtual void drawFrame()=0;
 public:
     //-Members-----------------------------------------------------------
     VkDescriptorSetLayout _descriptorSetLayout;
     VulkanSetup* _vkSetup;
     SwapChain* _swapChain;
     Model* _model;
+    size_t _currentFrame=0;
+    uint32_t _scImageIndex=0;//index of current swap chain image
 };

@@ -5,7 +5,7 @@
 #include "SpotLight.h"
 #include "RenderingBase.h"
 
-
+class Camera;
 
 class ForwardRendering:public RenderingBase
 {
@@ -38,9 +38,26 @@ public:
     virtual void createUniformBuffers() override;
     virtual void createDescriptorPool() override;
     virtual void createDescriptorSets() override;
+    virtual void updateUniformBuffers(uint32_t curImage) override;
     void updateVertUniformBuffer(uint32_t imgIndex, const UniformBufferObjectVert& ubo);
     void updateFragUniformBuffer(uint32_t imgIndex, const UniformBufferObjectFrag& ubo);
 
+    //-Command buffer initialisation functions------------------------------------------------
+    virtual void createCommandPool() override;
+    virtual void createCommandBuffer() override;
+    virtual void recordCommandBuffers() override;
+    void recordRenderCommandBuffer(uint32_t cmdBufferIndex);
+
+    //-Sync structures-------------------------------------------------------------------
+    virtual void createSyncObjects() override;
+    
+    //-Draw Frame-------------------------------------------------------
+    virtual void drawFrame() override;
+
+    void SetCamera(Camera* cam)
+    {
+        _camera=cam;
+    }
 public:
     VkRenderPass _renderPass;
     VkPipelineLayout _pipelineLayout;
@@ -54,5 +71,20 @@ public:
 
     VkDescriptorPool _descriptorPool;
     std::vector<VkDescriptorSet> _descriptorSets;
+
+    //1 semaphore per frame, GPU-GPU sync
+    std::vector<VkSemaphore> _imageAvailableSemaphores;
+    std::vector<VkSemaphore> _renderFinishedSemaphores;
+
+    //1 fence per frame, CPU-GPU sync
+    std::vector<VkFence> _inFlightFences;
+    std::vector<VkFence> _imagesInFlight;
+
+    Camera* _camera;
+    bool _frameBufferResized=false;
+
+    glm::vec3 translate = glm::vec3(0.0f);
+    glm::vec3 rotate = glm::vec3(0.0f);;
+    float scale = 1.0f;
 };
 

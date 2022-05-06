@@ -42,7 +42,7 @@ void SwapChain::createSwapChain()
     VkPresentModeKHR presentMode=chooseSwapPresentMode(supportDetails.presentModes);
     VkExtent2D newExtent=chooseSwapExtent(supportDetails.capabilities);
 
-    uint32_t imageCount = supportDetails.capabilities.minImageCount+1;//+1 to avoid waiting
+    uint32_t imageCount = supportDetails.capabilities.minImageCount + 1;//+1 to avoid waiting
     if (supportDetails.capabilities.maxImageCount>0&&imageCount>supportDetails.capabilities.maxImageCount)
     {
         imageCount=supportDetails.capabilities.maxImageCount;

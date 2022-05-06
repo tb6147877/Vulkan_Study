@@ -19,7 +19,6 @@ private:
     VkPresentModeKHR chooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes);
     VkExtent2D chooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities);
 
-    //VulkanSetup::SwapChainSupportDetails querySwapChainSupport();
 public:
     //-Members-------------------------------------------------------------------------------
     VulkanSetup* _vkSetup;
@@ -30,6 +29,5 @@ public:
     VkFormat _imageFormat;
     std::vector<VkImage> _images;
     std::vector<VkImageView> _imageViews;
-    //VulkanSetup::SwapChainSupportDetails  supportDetails;
 
 };

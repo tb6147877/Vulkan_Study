@@ -44,5 +44,4 @@ void BackFrameBuffer::createFrameBuffers(const SwapChain* swapChain,const VkRend
             throw std::runtime_error("failed to create framebuffer");
         }
     }
-    
 }

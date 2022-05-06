@@ -45,8 +45,8 @@ public:
     //-Command buffer initialisation functions------------------------------------------------
     virtual void createCommandPool() override;
     virtual void createCommandBuffer() override;
-    virtual void recordCommandBuffers() override;
-    void recordRenderCommandBuffer(uint32_t cmdBufferIndex);
+    virtual void recordCommandBuffers() override{}
+    void recordRenderCommandBuffer(VkCommandBuffer cmdBuffer,uint32_t imgIndex);
 
     //-Sync structures-------------------------------------------------------------------
     virtual void createSyncObjects() override;
@@ -78,7 +78,6 @@ public:
 
     //1 fence per frame, CPU-GPU sync
     std::vector<VkFence> _inFlightFences;
-    std::vector<VkFence> _imagesInFlight;
 
     Camera* _camera;
     bool _frameBufferResized=false;

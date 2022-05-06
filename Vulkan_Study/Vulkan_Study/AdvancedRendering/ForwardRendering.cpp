@@ -210,15 +210,13 @@ void ForwardRendering::createDescriptorSetLayout()
 
 void ForwardRendering::createUniformBuffers()
 {
-    VulkanBuffer::createUniformBuffer<UniformBufferObjectVert>(_vkSetup,_swapChain->_images.size(),&_vertUniformBuffer,
+    VulkanBuffer::createUniformBuffer<UniformBufferObjectVert>(_vkSetup,MAX_FRAMES_IN_FLIGHT,&_vertUniformBuffer,
         VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT|VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
-    VulkanBuffer::createUniformBuffer<UniformBufferObjectFrag>(_vkSetup,_swapChain->_images.size(),&_fragUniformBuffer,
+    VulkanBuffer::createUniformBuffer<UniformBufferObjectFrag>(_vkSetup,MAX_FRAMES_IN_FLIGHT,&_fragUniformBuffer,
         VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT|VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
 }
 
 void ForwardRendering::createDescriptorPool(){
-    uint32_t swapChainImageCount=static_cast<uint32_t>(_swapChain->_images.size());
-
     VkDescriptorPoolSize poolSizes[]={
         { VK_DESCRIPTOR_TYPE_SAMPLER,                DESCRIPTOR_POOL_NUM },
         { VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, DESCRIPTOR_POOL_NUM },
@@ -236,7 +234,7 @@ void ForwardRendering::createDescriptorPool(){
     VkDescriptorPoolCreateInfo poolInfo{};
     poolInfo.sType=VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
     poolInfo.flags=VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT;// determines if individual descriptor sets can be freed or not
-    poolInfo.maxSets=DESCRIPTOR_POOL_NUM*swapChainImageCount;
+    poolInfo.maxSets=DESCRIPTOR_POOL_NUM*MAX_FRAMES_IN_FLIGHT;
     poolInfo.poolSizeCount=static_cast<uint32_t>(sizeof(poolSizes)/sizeof(VkDescriptorPoolSize));
     poolInfo.pPoolSizes=poolSizes;
 
@@ -249,7 +247,7 @@ void ForwardRendering::createDescriptorPool(){
 void ForwardRendering::createDescriptorSets()
 {
     std::vector<VkWriteDescriptorSet> writeDescriptorSets;
-    std::vector<VkDescriptorSetLayout> layouts(_swapChain->_images.size(),_descriptorSetLayout);
+    std::vector<VkDescriptorSetLayout> layouts(MAX_FRAMES_IN_FLIGHT,_descriptorSetLayout);
     VkDescriptorSetAllocateInfo allocInfo=utils::initDescriptorSetAllocInfo(_descriptorPool,static_cast<uint32_t>(layouts.size()),layouts.data());
     _descriptorSets.resize(layouts.size());
 
@@ -331,7 +329,7 @@ void ForwardRendering::createCommandPool(){
 }
 
 void ForwardRendering::createCommandBuffer(){
-    _renderCommandBuffer.resize(_swapChain->_images.size());
+    _renderCommandBuffer.resize(MAX_FRAMES_IN_FLIGHT);
     utils::createCommandBuffers(*_vkSetup,static_cast<uint32_t>(_renderCommandBuffer.size()),_renderCommandBuffer.data(),_renderCommandPool);
 }
 
@@ -341,7 +339,6 @@ void ForwardRendering::createSyncObjects()
     _renderFinishedSemaphores.resize(MAX_FRAMES_IN_FLIGHT);
 
     _inFlightFences.resize(MAX_FRAMES_IN_FLIGHT);
-    _imagesInFlight.resize(_swapChain->_images.size(),VK_NULL_HANDLE);
 
     VkSemaphoreCreateInfo semaphoreInfo{};
     semaphoreInfo.sType=VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
@@ -365,20 +362,12 @@ void ForwardRendering::createSyncObjects()
     }
 }
 
-void ForwardRendering::recordCommandBuffers()
-{
-    for (size_t i=0;i<_swapChain->_images.size();i++)
-    {
-        recordRenderCommandBuffer(i);
-    }
-}
-
-void ForwardRendering::recordRenderCommandBuffer(uint32_t cmdBufferIndex)
+void ForwardRendering::recordRenderCommandBuffer(VkCommandBuffer cmdBuffer,uint32_t imgIndex)
 {
     VkCommandBufferBeginInfo commandBufferBeginInfo=utils::initCommandBufferBeginInfo();
 
     //implicitly resets cmd buffer
-    if (vkBeginCommandBuffer(_renderCommandBuffer[cmdBufferIndex],&commandBufferBeginInfo)!=VK_SUCCESS)
+    if (vkBeginCommandBuffer(cmdBuffer,&commandBufferBeginInfo)!=VK_SUCCESS)
     {
         throw std::runtime_error("failed to begin recording command buffer!");
     }
@@ -390,35 +379,35 @@ void ForwardRendering::recordRenderCommandBuffer(uint32_t cmdBufferIndex)
     VkRenderPassBeginInfo renderPassBeginInfo{};
     renderPassBeginInfo.sType=VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
     renderPassBeginInfo.renderPass=_renderPass;
-    renderPassBeginInfo.framebuffer=_backFrameBuffer._framebuffers[cmdBufferIndex];
+    renderPassBeginInfo.framebuffer=_backFrameBuffer._framebuffers[imgIndex];
     renderPassBeginInfo.renderArea.offset={0,0};
     renderPassBeginInfo.renderArea.extent=_swapChain->_extent;
     renderPassBeginInfo.clearValueCount=static_cast<uint32_t>(clearValues.size());
     renderPassBeginInfo.pClearValues=clearValues.data();
 
     //begin recording
-    vkCmdBeginRenderPass(_renderCommandBuffer[cmdBufferIndex],&renderPassBeginInfo,VK_SUBPASS_CONTENTS_INLINE);
+    vkCmdBeginRenderPass(cmdBuffer,&renderPassBeginInfo,VK_SUBPASS_CONTENTS_INLINE);
 
     //bind pipeline
-    vkCmdBindPipeline(_renderCommandBuffer[cmdBufferIndex],VK_PIPELINE_BIND_POINT_GRAPHICS,_pipeline);
+    vkCmdBindPipeline(cmdBuffer,VK_PIPELINE_BIND_POINT_GRAPHICS,_pipeline);
 
     //bind vertex buffer
     VkDeviceSize offset=0;
-    vkCmdBindVertexBuffers(_renderCommandBuffer[cmdBufferIndex],0,1,&_model->_vertexBuffer._buffer,&offset);
+    vkCmdBindVertexBuffers(cmdBuffer,0,1,&_model->_vertexBuffer._buffer,&offset);
 
     //bind index buffer
-    vkCmdBindIndexBuffer(_renderCommandBuffer[cmdBufferIndex],_model->_indexBuffer._buffer,0,VK_INDEX_TYPE_UINT32);
+    vkCmdBindIndexBuffer(cmdBuffer,_model->_indexBuffer._buffer,0,VK_INDEX_TYPE_UINT32);
 
     //bind descriptor
-    vkCmdBindDescriptorSets(_renderCommandBuffer[cmdBufferIndex],VK_PIPELINE_BIND_POINT_GRAPHICS,_pipelineLayout,0,1,&_descriptorSets[cmdBufferIndex],0,nullptr);
+    vkCmdBindDescriptorSets(cmdBuffer,VK_PIPELINE_BIND_POINT_GRAPHICS,_pipelineLayout,0,1,&_descriptorSets[_currentFrame],0,nullptr);
 
     //draw
-    vkCmdDrawIndexed(_renderCommandBuffer[cmdBufferIndex], _model->getIndicesNum(),1,0,0,0);
+    vkCmdDrawIndexed(cmdBuffer, _model->getIndicesNum(),1,0,0,0);
     
     //end recording
-    vkCmdEndRenderPass(_renderCommandBuffer[cmdBufferIndex]);
+    vkCmdEndRenderPass(cmdBuffer);
 
-    if (vkEndCommandBuffer(_renderCommandBuffer[cmdBufferIndex])!=VK_SUCCESS)
+    if (vkEndCommandBuffer(cmdBuffer)!=VK_SUCCESS)
     {
         throw std::runtime_error("failed to end recording command buffer!");
     }
@@ -452,16 +441,8 @@ void ForwardRendering::drawFrame()
         throw std::runtime_error("failed to acquire swap chain image!");
     }
 
-    if (_imagesInFlight[_scImageIndex]!=VK_NULL_HANDLE)//check is a previous frame is using this image
-    {
-        vkWaitForFences(_vkSetup->_device,1,&_imagesInFlight[_scImageIndex],VK_TRUE,UINT64_MAX);
-    }
-
-    _imagesInFlight[_scImageIndex]=_inFlightFences[_currentFrame];//set image as in use by current frame
-
-    updateUniformBuffers(_scImageIndex);
-
-    //recordRenderCommandBuffer(_scImageIndex);
+    updateUniformBuffers(_currentFrame);
+    recordRenderCommandBuffer(_renderCommandBuffer[_currentFrame],_scImageIndex);
 
     VkPipelineStageFlags waitStage=VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
     VkSubmitInfo submitInfo{};

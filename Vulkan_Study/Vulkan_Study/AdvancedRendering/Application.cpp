@@ -130,22 +130,12 @@ int Application::processKeyInput()
 
     if (glfwGetKey(_window,GLFW_KEY_RIGHT))
     {
-        _camera.processMouseMovement(0,-0.3,true);
+        _camera.processMouseMovement(0,-0.3,false);
     }
 
     if (glfwGetKey(_window,GLFW_KEY_LEFT))
     {
-        _camera.processMouseMovement(0,0.3,true);
-    }
-
-    if (glfwGetKey(_window,GLFW_KEY_UP))
-    {
-        _camera.processMouseMovement(0.3,0,true);
-    }
-
-    if (glfwGetKey(_window,GLFW_KEY_DOWN))
-    {
-        _camera.processMouseMovement(-0.3,0,true);
+        _camera.processMouseMovement(0,0.3,false);
     }
     return 1;
 }

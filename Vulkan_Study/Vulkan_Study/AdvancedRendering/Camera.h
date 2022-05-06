@@ -45,6 +45,7 @@ public:
     glm::mat4 getProjectionMatrix(const float left, const float right, const float bottom,const float top, const float zNear=0.1f, const float zFar=100.0f);
     float getZoom() const { return m_zoom; }
     glm::vec3 getPosition() const { return m_position; }
+    
     glm::vec3 getFront() const { return m_front; }
     void setMovementSpeed(const float speed) { m_movementSpeed = speed; }
 

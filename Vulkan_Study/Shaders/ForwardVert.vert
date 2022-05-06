@@ -23,6 +23,6 @@ void main(){
     gl_Position=ubo.proj*ubo.view*ubo.model*vec4(inPosition,1.0);
     
     fragPos=(ubo.model*vec4(inPosition,1.0)).xyz;
-    fragNormal=inNormal;
+    fragNormal=mat3(transpose(inverse(ubo.model))) * inNormal; 
     fragTexCoord=inTexCoord;
 }

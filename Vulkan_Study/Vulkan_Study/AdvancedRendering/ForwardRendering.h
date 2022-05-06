@@ -58,6 +58,11 @@ public:
     {
         _camera=cam;
     }
+
+    void SetPointLights(const std::vector<PointLight>& lights)
+    {
+        _pointLights[0]=lights[0];
+    }
 public:
     VkRenderPass _renderPass;
     VkPipelineLayout _pipelineLayout;
@@ -75,11 +80,13 @@ public:
     //1 semaphore per frame, GPU-GPU sync
     std::vector<VkSemaphore> _imageAvailableSemaphores;
     std::vector<VkSemaphore> _renderFinishedSemaphores;
+    
 
     //1 fence per frame, CPU-GPU sync
     std::vector<VkFence> _inFlightFences;
 
     Camera* _camera;
+    PointLight _pointLights[1];
     bool _frameBufferResized=false;
 
     glm::vec3 translate = glm::vec3(0.0f);

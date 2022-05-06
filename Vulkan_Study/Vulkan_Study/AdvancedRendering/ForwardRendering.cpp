@@ -306,6 +306,14 @@ void ForwardRendering::updateUniformBuffers(uint32_t curImage)
     vertUBO.proj=proj;
 
     updateVertUniformBuffer(curImage,vertUBO);
+
+    UniformBufferObjectFrag fragUBO{};
+    fragUBO.viewPos=glm::vec4(_camera->getPosition().x,_camera->getPosition().y,_camera->getPosition().z,0.0);
+    fragUBO.pointLights[0]={ {5.0f, 5.0f, 5.0f, 0.0f}, {1.0f, 1.0f, 1.0f, 40.0f} };
+    fragUBO.gap=glm::vec4(0.0);
+
+    updateFragUniformBuffer(curImage,fragUBO);
+    
 }
 
 void ForwardRendering::updateVertUniformBuffer(uint32_t imgIndex, const UniformBufferObjectVert& ubo)

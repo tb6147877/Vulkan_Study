@@ -64,7 +64,7 @@ void Application::initScene()
     _model.loadModel(MODEL_PATH);
     _model.loadModelTextures(&_vkSetup,_basicRenderer->_renderCommandPool,MODEL_TEXTURES_PATH);
     _model.generateModelVertexBuffer(&_vkSetup,_basicRenderer->_renderCommandPool);
-    _pointLights[0]= { {5.0f, -5.0f, 0.0f, 0.0f}, {0.5f, 0.5f, 0.5f, 40.0f} };
+    _pointLights.push_back({ {5.0f, 5.0f, 5.0f, 0.0f}, {0.5f, 0.5f, 0.5f, 40.0f} }) ;
     _spotLight={{5.0f,-5.0f,0.0f},0.1f,40.0f};
 }
 
@@ -73,6 +73,7 @@ void Application::prepareRendering()
     _basicRenderer->createDescriptorSets();
     _basicRenderer->recordCommandBuffers();
     _basicRenderer->SetCamera(&_camera);
+    _basicRenderer->SetPointLights(_pointLights);
 }
 
 void Application::initWindow()

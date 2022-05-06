@@ -45,7 +45,7 @@ private:
     GLFWwindow* _window;
     VulkanSetup _vkSetup;
     Camera _camera;
-    PointLight _pointLights[1];
+    std::vector<PointLight> _pointLights;
     SpotLight _spotLight;
     Model _model;
     ForwardRendering* _basicRenderer;

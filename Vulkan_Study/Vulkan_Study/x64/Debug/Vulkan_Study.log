@@ -1,1 +1,5 @@
-﻿  Vulkan_Study.vcxproj -> D:\Project\Vulkan_Study\Vulkan_Study\x64\Debug\Vulkan_Study.exe
+﻿  Application.cpp
+D:\Project\Vulkan_Study\Vulkan_Study\Vulkan_Study\AdvancedRendering\VulkanSetup.h(1,1): warning C4819: 该文件包含不能在当前代码页(936)中表示的字符。请将该文件保存为 Unicode 格式以防止数据丢失
+D:\Project\Vulkan_Study\Vulkan_Study\Vulkan_Study\AdvancedRendering\Application.cpp(133,50): warning C4305: “参数”: 从“double”到“const float”截断
+D:\Project\Vulkan_Study\Vulkan_Study\Vulkan_Study\AdvancedRendering\Application.cpp(138,49): warning C4305: “参数”: 从“double”到“const float”截断
+  Vulkan_Study.vcxproj -> D:\Project\Vulkan_Study\Vulkan_Study\x64\Debug\Vulkan_Study.exe

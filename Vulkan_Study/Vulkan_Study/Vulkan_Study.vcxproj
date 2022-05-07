@@ -167,6 +167,7 @@
     <ClCompile Include="AdvancedRendering\Image.cpp" />
     <ClCompile Include="AdvancedRendering\Model.cpp" />
     <ClCompile Include="AdvancedRendering\Orientation.cpp" />
+    <ClCompile Include="AdvancedRendering\RenderingBase.cpp" />
     <ClCompile Include="AdvancedRendering\SpotLight.cpp" />
     <ClCompile Include="AdvancedRendering\SwapChain.cpp" />
     <ClCompile Include="AdvancedRendering\Texture.cpp" />

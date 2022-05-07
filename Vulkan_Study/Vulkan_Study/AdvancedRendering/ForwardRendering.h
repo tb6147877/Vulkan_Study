@@ -1,7 +1,7 @@
 #pragma once
 #include <glm/glm.hpp>
 
-#include "FrameBuffer.h"
+
 #include "SpotLight.h"
 #include "RenderingBase.h"
 
@@ -10,25 +10,9 @@ class Camera;
 class ForwardRendering:public RenderingBase
 {
 public:
-    struct UniformBufferObjectVert {
-        glm::mat4 model;
-        glm::mat4 view;
-        glm::mat4 proj;
-    };
-
-    struct UniformBufferObjectFrag {
-        PointLight pointLights[1];
-        glm::vec4 viewPos;
-        glm::vec4 gap;
-    };
-    
-public:
     //-Initialisation and cleanup----------------------------------------
     virtual void initRenderer(VulkanSetup* pVkSetup, SwapChain* swapchain, Model* model) override;
     virtual void cleanupRenderer() override;
-
-    //-Render pass-------------------------------------------------------
-    virtual void createRenderPass() override;
 
     //-Pipelines-----------------------------------------------------------------
     virtual void createPipeline() override;
@@ -43,7 +27,6 @@ public:
     void updateFragUniformBuffer(uint32_t imgIndex, const UniformBufferObjectFrag& ubo);
 
     //-Command buffer initialisation functions------------------------------------------------
-    virtual void createCommandPool() override;
     virtual void createCommandBuffer() override;
     virtual void recordCommandBuffers() override{}
     void recordRenderCommandBuffer(VkCommandBuffer cmdBuffer,uint32_t imgIndex);
@@ -64,12 +47,9 @@ public:
         _pointLights[0]=lights[0];
     }
 public:
-    VkRenderPass _renderPass;
-    VkPipelineLayout _pipelineLayout;
+    
     VkPipeline _pipeline;
-    VkCommandPool _renderCommandPool;
     std::vector<VkCommandBuffer> _renderCommandBuffer;
-    BackFrameBuffer _backFrameBuffer;
 
     VulkanBuffer _vertUniformBuffer;
     VulkanBuffer _fragUniformBuffer;

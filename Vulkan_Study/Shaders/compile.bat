@@ -12,4 +12,10 @@ C:/VulkanSDK/1.2.198.1/Bin/glslc.exe shader05.vert -o vert05.spv
 
 C:/VulkanSDK/1.2.198.1/Bin/glslc.exe ForwardVert.vert -o ForwardVert.spv
 C:/VulkanSDK/1.2.198.1/Bin/glslc.exe ForwardFrag.frag -o ForwardFrag.spv
+
+C:/VulkanSDK/1.2.198.1/Bin/glslc.exe DeferredGBufferVert.vert -o DeferredGBufferVert.spv
+C:/VulkanSDK/1.2.198.1/Bin/glslc.exe DeferredGBufferFrag.frag -o DeferredGBufferFrag.spv
+
+C:/VulkanSDK/1.2.198.1/Bin/glslc.exe DeferredCombineVert.vert -o DeferredCombineVert.spv
+C:/VulkanSDK/1.2.198.1/Bin/glslc.exe DeferredCombineFrag.frag -o DeferredCombineFrag.spv
 pause

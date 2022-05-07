@@ -139,6 +139,20 @@ namespace utils
         }
     }
 
+    void createDescriptorSetLayout(const VkDevice* device, VkDescriptorSetLayout* descriptorSetLayout,
+       const std::vector<VkDescriptorSetLayoutBinding>& bindings)
+    {
+        VkDescriptorSetLayoutCreateInfo layoutCreateInfo{};
+        layoutCreateInfo.sType=VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+        layoutCreateInfo.bindingCount=static_cast<uint32_t>(bindings.size());
+        layoutCreateInfo.pBindings=bindings.data();
+
+        if (vkCreateDescriptorSetLayout(*device,&layoutCreateInfo,nullptr, descriptorSetLayout)!=VK_SUCCESS)
+        {
+            throw std::runtime_error("failed to create descriptor set layout");
+        }
+    }
+
     VkDescriptorSetLayoutBinding initDescriptorSetLayoutBinding(
         uint32_t binding,
         VkDescriptorType type,

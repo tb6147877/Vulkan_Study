@@ -131,6 +131,9 @@ namespace utils
  
     
     //-Descriptor set struct--------------------------------------------------------------------------
+    void createDescriptorSetLayout(const VkDevice* device, VkDescriptorSetLayout* descriptorSetLayout,
+        const std::vector<VkDescriptorSetLayoutBinding>& bindings);
+    
     VkDescriptorSetLayoutBinding initDescriptorSetLayoutBinding(
         uint32_t binding,
         VkDescriptorType type,

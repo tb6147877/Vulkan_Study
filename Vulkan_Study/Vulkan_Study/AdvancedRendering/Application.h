@@ -11,6 +11,7 @@
 
 #include <chrono>
 
+#include "DeferredRendering.h"
 #include "SwapChain.h"
 #include "Texture.h"
 
@@ -49,7 +50,7 @@ private:
     SpotLight _spotLight;
     Model _model;
     ForwardRendering* _basicRenderer;
-    //RenderingBase* _mainRenderer;
+    DeferredRendering* _deferredRenderer;
     SwapChain _swapChain;
 
     std::chrono::steady_clock::time_point _prevTime;

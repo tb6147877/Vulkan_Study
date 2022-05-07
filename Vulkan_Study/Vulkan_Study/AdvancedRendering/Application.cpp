@@ -56,6 +56,9 @@ void Application::initVulkan()
     _swapChain.initSwapchain(&_vkSetup);
     _basicRenderer = new ForwardRendering();
     _basicRenderer->initRenderer(&_vkSetup,&_swapChain,&_model);
+
+    _deferredRenderer=new DeferredRendering();
+    _deferredRenderer->initRenderer(&_vkSetup,&_swapChain,&_model);
 }
 
 void Application::initScene()

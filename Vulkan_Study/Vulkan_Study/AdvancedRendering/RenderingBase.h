@@ -2,16 +2,29 @@
 #include "Model.h"
 #include "SwapChain.h"
 #include "VulkanSetup.h"
-
+#include "SpotLight.h"
+#include "FrameBuffer.h"
 class RenderingBase
 {
+public:
+    struct UniformBufferObjectVert {
+        glm::mat4 model;
+        glm::mat4 view;
+        glm::mat4 proj;
+    };
+
+    struct UniformBufferObjectFrag {
+        PointLight pointLights[1];
+        glm::vec4 viewPos;
+        glm::vec4 gap;
+    };
 public:
     //-Initialisation and cleanup----------------------------------------
     virtual void initRenderer(VulkanSetup* pVkSetup, SwapChain* swapchain, Model* model)=0;
     virtual void cleanupRenderer()=0;
 
     //-Render pass-------------------------------------------------------
-    virtual void createRenderPass()=0;
+    virtual void createOutputRenderPass();
 
     //-Pipelines-----------------------------------------------------------------
     virtual void createPipeline()=0;
@@ -24,7 +37,7 @@ public:
     virtual void updateUniformBuffers(uint32_t curImage)=0;
 
     //-Command buffer initialisation functions
-    virtual void createCommandPool()=0;
+    virtual void createCommandPool();
     virtual void createCommandBuffer()=0;
     virtual void recordCommandBuffers()=0;
 
@@ -41,4 +54,9 @@ public:
     Model* _model;
     size_t _currentFrame=0;
     uint32_t _scImageIndex=0;//index of current swap chain image
+
+    BackFrameBuffer _backFrameBuffer;
+    VkCommandPool _renderCommandPool;
+    VkRenderPass _outputRenderPass;
+    VkPipelineLayout _pipelineLayout;
 };

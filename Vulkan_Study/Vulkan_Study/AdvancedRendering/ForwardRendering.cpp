@@ -111,41 +111,6 @@ void ForwardRendering::createDescriptorSetLayout()
     utils::createDescriptorSetLayout(&_vkSetup->_device,&_descriptorSetLayout,setLayoutBindings);
 }
 
-void ForwardRendering::createUniformBuffers()
-{
-    VulkanBuffer::createUniformBuffer<UniformBufferObjectVert>(_vkSetup,MAX_FRAMES_IN_FLIGHT,&_vertUniformBuffer,
-        VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT|VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
-    VulkanBuffer::createUniformBuffer<UniformBufferObjectFrag>(_vkSetup,MAX_FRAMES_IN_FLIGHT,&_fragUniformBuffer,
-        VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT|VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
-}
-
-void ForwardRendering::createDescriptorPool(){
-    VkDescriptorPoolSize poolSizes[]={
-        { VK_DESCRIPTOR_TYPE_SAMPLER,                DESCRIPTOR_POOL_NUM },
-        { VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, DESCRIPTOR_POOL_NUM },
-        { VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,          DESCRIPTOR_POOL_NUM },
-        { VK_DESCRIPTOR_TYPE_STORAGE_IMAGE,          DESCRIPTOR_POOL_NUM },
-        { VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER,   DESCRIPTOR_POOL_NUM },
-        { VK_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER,   DESCRIPTOR_POOL_NUM },
-        { VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,         DESCRIPTOR_POOL_NUM },
-        { VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,         DESCRIPTOR_POOL_NUM },
-        { VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, DESCRIPTOR_POOL_NUM },
-        { VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC, DESCRIPTOR_POOL_NUM },
-        { VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT,       DESCRIPTOR_POOL_NUM }
-    };
-
-    VkDescriptorPoolCreateInfo poolInfo{};
-    poolInfo.sType=VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
-    poolInfo.flags=VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT;// determines if individual descriptor sets can be freed or not
-    poolInfo.maxSets=DESCRIPTOR_POOL_NUM*MAX_FRAMES_IN_FLIGHT;
-    poolInfo.poolSizeCount=static_cast<uint32_t>(sizeof(poolSizes)/sizeof(VkDescriptorPoolSize));
-    poolInfo.pPoolSizes=poolSizes;
-
-    if (vkCreateDescriptorPool(_vkSetup->_device,&poolInfo,nullptr,&_descriptorPool)!=VK_SUCCESS)
-    {
-        throw std::runtime_error("failed to create descriptor pool!");
-    }
-}
 
 void ForwardRendering::createDescriptorSets()
 {
@@ -217,22 +182,6 @@ void ForwardRendering::updateUniformBuffers(uint32_t curImage)
 
     updateFragUniformBuffer(curImage,fragUBO);
     
-}
-
-void ForwardRendering::updateVertUniformBuffer(uint32_t imgIndex, const UniformBufferObjectVert& ubo)
-{
-    void* data;
-    vkMapMemory(_vkSetup->_device,_vertUniformBuffer._memory,sizeof(ubo)*imgIndex,sizeof(ubo),0,&data);
-    memcpy(data,&ubo,sizeof(ubo));
-    vkUnmapMemory(_vkSetup->_device,_vertUniformBuffer._memory);
-}
-
-void ForwardRendering::updateFragUniformBuffer(uint32_t imgIndex, const UniformBufferObjectFrag& ubo)
-{
-    void* data;
-    vkMapMemory(_vkSetup->_device,_fragUniformBuffer._memory,sizeof(ubo)*imgIndex,sizeof(ubo),0,&data);
-    memcpy(data,&ubo,sizeof(ubo));
-    vkUnmapMemory(_vkSetup->_device,_fragUniformBuffer._memory);
 }
 
 void ForwardRendering::createCommandBuffer(){

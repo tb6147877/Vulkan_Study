@@ -3,6 +3,8 @@
 #include <set>
 #include <stdexcept>
 
+#include "AppConstants.h"
+#include "Shader.h"
 #include "Utils.h"
 
 void DeferredRendering::initRenderer(VulkanSetup* pVkSetup, SwapChain* swapchain, Model* model){
@@ -17,6 +19,11 @@ void DeferredRendering::initRenderer(VulkanSetup* pVkSetup, SwapChain* swapchain
     _backFrameBuffer.initFramebuffer(_vkSetup,_swapChain,_renderCommandPool,_outputRenderPass);
     createDeferredFramebuffer();
     createColorAttachmentSampler();
+    createPipeline();
+    createUniformBuffers();
+    createDescriptorPool();
+    createCommandBuffer();
+    createSyncObjects();
 }
 void DeferredRendering::cleanupRenderer(){
     //todo:clean all vulkan objs
@@ -209,8 +216,10 @@ void DeferredRendering::createPipeline()
     {
         throw std::runtime_error("failed to create pipeline layout!");
     }
-    
-    VkPipelineColorBlendAttachmentState colorBlendAttachment=utils::initPipelineColorBlendAttachmentState(VK_COLOR_COMPONENT_R_BIT|VK_COLOR_COMPONENT_G_BIT|VK_COLOR_COMPONENT_B_BIT|VK_COLOR_COMPONENT_A_BIT,VK_FALSE);
+
+    //refer to 1 color attachment
+    VkColorComponentFlags colBlendAttachFlag=VK_COLOR_COMPONENT_R_BIT|VK_COLOR_COMPONENT_G_BIT|VK_COLOR_COMPONENT_B_BIT|VK_COLOR_COMPONENT_A_BIT;
+    VkPipelineColorBlendAttachmentState colorBlendAttachment=utils::initPipelineColorBlendAttachmentState(colBlendAttachFlag,VK_FALSE);
     
     VkViewport viewport{0.0f,0.0f,(float)_swapChain->_extent.width,(float)_swapChain->_extent.height,0.0f,1.0f};
     VkRect2D scissor{{0,0},_swapChain->_extent};
@@ -235,37 +244,386 @@ void DeferredRendering::createPipeline()
     pipelineInfo.pMultisampleState=&multisampling;
     pipelineInfo.pDepthStencilState=&depthStencil;
     pipelineInfo.pColorBlendState=&colorBlending;
-    
-    
-}
 
-void DeferredRendering::createUniformBuffers(){
+    //combine pipeline
+    vertShaderModule=Shader::createShaderModule(_vkSetup,Shader::readFile(DFD_COMBINE_VERT_SHADER));
+    fragShaderModule=Shader::createShaderModule(_vkSetup,Shader::readFile(DFD_COMBINE_FRAG_SHADER));
 
-}
+    shaderStages[0]=utils::initPipelineShaderStageCreateInfo(VK_SHADER_STAGE_VERTEX_BIT,vertShaderModule,"main");
+    shaderStages[1]=utils::initPipelineShaderStageCreateInfo(VK_SHADER_STAGE_FRAGMENT_BIT,fragShaderModule,"main");
 
-void DeferredRendering::createDescriptorPool(){
+    rasterizer.cullMode=VK_CULL_MODE_FRONT_BIT;
 
+    VkPipelineVertexInputStateCreateInfo emptyInputStateInfo=utils::initPipelineVertexInputStateCreateInfo(0,nullptr,0,nullptr);
+    pipelineInfo.pVertexInputState=&emptyInputStateInfo;
+
+    if (vkCreateGraphicsPipelines(_vkSetup->_device,VK_NULL_HANDLE,1,&pipelineInfo,nullptr,&_combinePipeline)!=VK_SUCCESS)
+    {
+        throw std::runtime_error("failed to create combine pipeline!");
+    }
+
+    vkDestroyShaderModule(_vkSetup->_device,vertShaderModule,nullptr);
+    vkDestroyShaderModule(_vkSetup->_device,fragShaderModule,nullptr);
+
+    //gbuffer pipeline
+    pipelineInfo.renderPass=_deferredRenderPass;
+
+    vertShaderModule=Shader::createShaderModule(_vkSetup,Shader::readFile(DFD_GBUFFER_VERT_SHADER));
+    fragShaderModule=Shader::createShaderModule(_vkSetup,Shader::readFile(DFD_GBUFFER_FRAG_SHADER));
+
+    shaderStages[0]=utils::initPipelineShaderStageCreateInfo(VK_SHADER_STAGE_VERTEX_BIT,vertShaderModule,"main");
+    shaderStages[1]=utils::initPipelineShaderStageCreateInfo(VK_SHADER_STAGE_FRAGMENT_BIT,fragShaderModule,"main");
+
+    rasterizer.cullMode=VK_CULL_MODE_BACK_BIT;
+
+    auto bindingDescription = _model->getBindingDescriptions(0);
+    auto attributeDescriptions = _model->getAttributeDescriptions(0);
+    VkPipelineVertexInputStateCreateInfo vertexInputInfo=utils::initPipelineVertexInputStateCreateInfo(1,&bindingDescription,
+        static_cast<uint32_t>(attributeDescriptions.size()),attributeDescriptions.data());
+
+    pipelineInfo.pVertexInputState=&vertexInputInfo;
+
+    //refer to 3 color attachment
+    std::array<VkPipelineColorBlendAttachmentState,3> colorBlendAttachmentStates={
+        utils::initPipelineColorBlendAttachmentState(colBlendAttachFlag,VK_FALSE),
+        utils::initPipelineColorBlendAttachmentState(colBlendAttachFlag,VK_FALSE),
+        utils::initPipelineColorBlendAttachmentState(colBlendAttachFlag,VK_FALSE)
+    };
+
+    colorBlending.attachmentCount=static_cast<uint32_t>(colorBlendAttachmentStates.size());
+    colorBlending.pAttachments=colorBlendAttachmentStates.data();
+
+    if (vkCreateGraphicsPipelines(_vkSetup->_device,VK_NULL_HANDLE,1,&pipelineInfo,nullptr,&_gbufferPipeline)!=VK_SUCCESS)
+    {
+        throw std::runtime_error("failed to create combine pipeline!");
+    }
+
+    vkDestroyShaderModule(_vkSetup->_device,vertShaderModule,nullptr);
+    vkDestroyShaderModule(_vkSetup->_device,fragShaderModule,nullptr);
 }
 
 void DeferredRendering::createDescriptorSets(){
+    std::vector<VkWriteDescriptorSet> writeDescriptorSets;
+    std::vector<VkDescriptorSetLayout> layouts(MAX_FRAMES_IN_FLIGHT,_descriptorSetLayout);
+    VkDescriptorSetAllocateInfo allocInfo=utils::initDescriptorSetAllocInfo(_descriptorPool,1,layouts.data());
 
+    //gbuffer descriptor set
+    if (vkAllocateDescriptorSets(_vkSetup->_device,&allocInfo,&_gbufferDescriptorSet)!=VK_SUCCESS)
+    {
+        throw std::runtime_error("failed to alloc gbuffer descriptor set!");
+    }
+
+    VkDescriptorBufferInfo gbufferUBOInfo{};
+    gbufferUBOInfo.buffer=_vertUniformBuffer._buffer;
+    gbufferUBOInfo.offset=0;
+    gbufferUBOInfo.range=sizeof(UniformBufferObjectVert);
+    if (!_vkSetup->isUniformBufferOffsetValid(gbufferUBOInfo.offset))
+    {
+        throw std::runtime_error("vertex uniform buffer do not fit data alignment!");
+    }
+
+    VkDescriptorImageInfo texDescriptor{};
+    texDescriptor.imageLayout=VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+    texDescriptor.imageView=_model->_textures[0]._textureImageView;
+    texDescriptor.sampler=_model->_textures[0]._textureSampler;
+
+    writeDescriptorSets={
+        utils::initWriteDescriptorSet(_gbufferDescriptorSet,0,VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,&gbufferUBOInfo),
+        utils::initWriteDescriptorSet(_gbufferDescriptorSet,1,VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,&texDescriptor)
+    };
+
+    vkUpdateDescriptorSets(_vkSetup->_device,static_cast<uint32_t>(writeDescriptorSets.size()),writeDescriptorSets.data(),0,nullptr);
+
+    //combine descriptor sets
+    allocInfo.descriptorSetCount=static_cast<uint32_t>(layouts.size());
+    _descriptorSets.resize(layouts.size());
+
+    if (vkAllocateDescriptorSets(_vkSetup->_device,&allocInfo,_descriptorSets.data())!=VK_SUCCESS)
+    {
+        throw std::runtime_error("failed to allocate descriptor sets!");
+    }
+    
+
+    VkDescriptorImageInfo texDescriptorPosition{};
+    texDescriptorPosition.imageLayout=VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+    texDescriptorPosition.imageView=_attachments["position"].imageView;
+    texDescriptorPosition.sampler=_colorAttachmentSampler;
+
+    VkDescriptorImageInfo texDescriptorNormal{};
+    texDescriptorNormal.imageLayout=VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+    texDescriptorNormal.imageView=_attachments["normal"].imageView;
+    texDescriptorNormal.sampler=_colorAttachmentSampler;
+
+    VkDescriptorImageInfo texDescriptorAlbedo{};
+    texDescriptorAlbedo.imageLayout=VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+    texDescriptorAlbedo.imageView=_attachments["albedo"].imageView;
+    texDescriptorAlbedo.sampler=_colorAttachmentSampler;
+    
+    
+    for (size_t i=0;i<_descriptorSets.size();i++)
+    {
+        VkDescriptorBufferInfo fragDescriptor{};
+        fragDescriptor.buffer=_fragUniformBuffer._buffer;
+        fragDescriptor.offset=sizeof(UniformBufferObjectFrag)*i;
+        fragDescriptor.range=sizeof(UniformBufferObjectFrag);
+        if (!_vkSetup->isUniformBufferOffsetValid(fragDescriptor.offset))
+        {
+            throw std::runtime_error("fragment uniform buffer do not fit data alignment!");
+        }
+
+        writeDescriptorSets={
+            utils::initWriteDescriptorSet(_descriptorSets[i],1,VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,&texDescriptorPosition),
+            utils::initWriteDescriptorSet(_descriptorSets[i],2,VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,&texDescriptorNormal),
+            utils::initWriteDescriptorSet(_descriptorSets[i],3,VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,&texDescriptorAlbedo),
+            utils::initWriteDescriptorSet(_descriptorSets[i],4,VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,&fragDescriptor)
+        };
+
+        vkUpdateDescriptorSets(_vkSetup->_device,static_cast<uint32_t>(writeDescriptorSets.size()),writeDescriptorSets.data(),0,nullptr);
+    }
 }
 
 void DeferredRendering::updateUniformBuffers(uint32_t curImage){
+    glm::mat4 proj=_camera->getProjectionMatrix(_swapChain->_extent.width/(float)_swapChain->_extent.height,0.1f,40.0f);
+    proj[1][1]*=-1.0f;//y coordinates inverted, vulkan origin top left vs opengl bottom left
+    glm::mat4 model=glm::mat4(1.0f);
+   
 
+    UniformBufferObjectVert vertUBO{};
+    vertUBO.model=model;
+    vertUBO.view=_camera->getViewMatrix();
+    vertUBO.proj=proj;
+
+    updateVertUniformBuffer(curImage,vertUBO);
+
+    UniformBufferObjectFrag fragUBO{};
+    fragUBO.viewPos=glm::vec4(_camera->getPosition().x,_camera->getPosition().y,_camera->getPosition().z,0.0);
+    fragUBO.pointLights[0]={ {5.0f, 5.0f, 5.0f, 0.0f}, {1.0f, 1.0f, 1.0f, 40.0f} };
+    fragUBO.gap=glm::vec4(0.0);
+
+    updateFragUniformBuffer(curImage,fragUBO);
 }
 
 void DeferredRendering::createCommandBuffer(){
-
+    _gbufferCommandBuffer.resize(MAX_FRAMES_IN_FLIGHT);
+    _combineCommandBuffer.resize(MAX_FRAMES_IN_FLIGHT);
+    utils::createCommandBuffers(*_vkSetup,static_cast<uint32_t>(_gbufferCommandBuffer.size()),_gbufferCommandBuffer.data(),_renderCommandPool);
+    utils::createCommandBuffers(*_vkSetup,static_cast<uint32_t>(_combineCommandBuffer.size()),_combineCommandBuffer.data(),_renderCommandPool);
 }
 
 void DeferredRendering::createSyncObjects(){
+    _imageAvailableSemaphores.resize(MAX_FRAMES_IN_FLIGHT);
+    _renderFinishedSemaphores.resize(MAX_FRAMES_IN_FLIGHT);
+    _gbufferSemaphores.resize(MAX_FRAMES_IN_FLIGHT);
 
+    _inFlightFences.resize(MAX_FRAMES_IN_FLIGHT);
+
+    VkSemaphoreCreateInfo semaphoreInfo{};
+    semaphoreInfo.sType=VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+
+    VkFenceCreateInfo fenceInfo{};
+    fenceInfo.sType=VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+    fenceInfo.flags=VK_FENCE_CREATE_SIGNALED_BIT;
+
+    for (size_t i=0;i<MAX_FRAMES_IN_FLIGHT;i++)
+    {
+        if (vkCreateSemaphore(_vkSetup->_device,&semaphoreInfo,nullptr,&_imageAvailableSemaphores[i])!=VK_SUCCESS
+            ||vkCreateSemaphore(_vkSetup->_device,&semaphoreInfo,nullptr,&_renderFinishedSemaphores[i])!=VK_SUCCESS
+            ||vkCreateSemaphore(_vkSetup->_device,&semaphoreInfo,nullptr,&_gbufferSemaphores[i])!=VK_SUCCESS)
+        {
+            throw std::runtime_error("failed to create semaphores!");
+        }
+
+        if (vkCreateFence(_vkSetup->_device,&fenceInfo,nullptr,&_inFlightFences[i])!=VK_SUCCESS)
+        {
+            throw std::runtime_error("failed to create fences!");
+        }
+    }
+}
+
+void DeferredRendering::recordCommandBuffers()
+{
+    for (size_t i=0;i<MAX_FRAMES_IN_FLIGHT;i++)
+    {
+        recordGBufferCommandBuffer(_gbufferCommandBuffer[i]);
+    }
+}
+
+void DeferredRendering::recordGBufferCommandBuffer(VkCommandBuffer cmdBuffer)
+{
+    VkCommandBufferBeginInfo commandBufferBeginInfo=utils::initCommandBufferBeginInfo();
+
+    //implicitly resets cmd buffer
+    if (vkBeginCommandBuffer(cmdBuffer,&commandBufferBeginInfo)!=VK_SUCCESS)
+    {
+        throw std::runtime_error("failed to begin recording command buffer!");
+    }
+
+    std::array<VkClearValue, 4> clearValues{};
+    clearValues[0].color = { 0.0f, 0.0f, 0.0f, 0.0f };
+    clearValues[1].color = { 0.0f, 0.0f, 0.0f, 0.0f };
+    clearValues[2].color = { 0.0f, 0.0f, 0.0f, 0.0f };
+    clearValues[3].depthStencil = { 1.0f, 0 };
+
+    VkRenderPassBeginInfo renderPassBeginInfo{};
+    renderPassBeginInfo.sType=VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+    renderPassBeginInfo.renderPass=_deferredRenderPass;
+    renderPassBeginInfo.framebuffer=_deferredFrameBuffer;
+    renderPassBeginInfo.renderArea.offset={0,0};
+    renderPassBeginInfo.renderArea.extent=_swapChain->_extent;
+    renderPassBeginInfo.clearValueCount=static_cast<uint32_t>(clearValues.size());
+    renderPassBeginInfo.pClearValues=clearValues.data();
+
+    //begin recording
+    vkCmdBeginRenderPass(cmdBuffer,&renderPassBeginInfo,VK_SUBPASS_CONTENTS_INLINE);
+
+    //bind pipeline
+    vkCmdBindPipeline(cmdBuffer,VK_PIPELINE_BIND_POINT_GRAPHICS,_gbufferPipeline);
+
+    //bind vertex buffer
+    VkDeviceSize offset=0;
+    vkCmdBindVertexBuffers(cmdBuffer,0,1,&_model->_vertexBuffer._buffer,&offset);
+
+    //bind index buffer
+    vkCmdBindIndexBuffer(cmdBuffer,_model->_indexBuffer._buffer,0,VK_INDEX_TYPE_UINT32);
+
+    //bind descriptor
+    vkCmdBindDescriptorSets(cmdBuffer,VK_PIPELINE_BIND_POINT_GRAPHICS,_pipelineLayout,0,1,&_gbufferDescriptorSet,0,nullptr);
+
+    //draw
+    vkCmdDrawIndexed(cmdBuffer, _model->getIndicesNum(),1,0,0,0);
+    
+    //end recording
+    vkCmdEndRenderPass(cmdBuffer);
+
+    if (vkEndCommandBuffer(cmdBuffer)!=VK_SUCCESS)
+    {
+        throw std::runtime_error("failed to end recording command buffer!");
+    }
+}
+
+void DeferredRendering::recordRenderCommandBuffer(VkCommandBuffer cmdBuffer,uint32_t imgIndex)
+{
+    VkCommandBufferBeginInfo commandBufferBeginInfo=utils::initCommandBufferBeginInfo();
+
+    //implicitly resets cmd buffer
+    if (vkBeginCommandBuffer(cmdBuffer,&commandBufferBeginInfo)!=VK_SUCCESS)
+    {
+        throw std::runtime_error("failed to begin recording command buffer!");
+    }
+
+    std::array<VkClearValue,2> clearValues{};
+    clearValues[0].color={0.0f,0.0f,0.0f,1.0f};
+    clearValues[1].depthStencil={1.0f,0};
+
+    VkRenderPassBeginInfo renderPassBeginInfo{};
+    renderPassBeginInfo.sType=VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+    renderPassBeginInfo.renderPass=_outputRenderPass;
+    renderPassBeginInfo.framebuffer=_backFrameBuffer._framebuffers[imgIndex];
+    renderPassBeginInfo.renderArea.offset={0,0};
+    renderPassBeginInfo.renderArea.extent=_swapChain->_extent;
+    renderPassBeginInfo.clearValueCount=static_cast<uint32_t>(clearValues.size());
+    renderPassBeginInfo.pClearValues=clearValues.data();
+
+    //begin recording
+    vkCmdBeginRenderPass(cmdBuffer,&renderPassBeginInfo,VK_SUBPASS_CONTENTS_INLINE);
+
+    //bind pipeline
+    vkCmdBindPipeline(cmdBuffer,VK_PIPELINE_BIND_POINT_GRAPHICS,_combinePipeline);
+
+    //bind descriptor
+    vkCmdBindDescriptorSets(cmdBuffer,VK_PIPELINE_BIND_POINT_GRAPHICS,_pipelineLayout,0,1,&_descriptorSets[_currentFrame],0,nullptr);
+
+    //draw
+    vkCmdDraw(cmdBuffer, 3,1,0,0);
+    
+    //end recording
+    vkCmdEndRenderPass(cmdBuffer);
+
+    if (vkEndCommandBuffer(cmdBuffer)!=VK_SUCCESS)
+    {
+        throw std::runtime_error("failed to end recording command buffer!");
+    }
 }
 
 
 void DeferredRendering::drawFrame()
 {
+    vkWaitForFences(_vkSetup->_device,1,&_inFlightFences[_currentFrame],VK_TRUE,UINT64_MAX);
 
+    VkResult result=vkAcquireNextImageKHR(_vkSetup->_device,_swapChain->_swapChain,UINT64_MAX,
+        _imageAvailableSemaphores[_currentFrame],VK_NULL_HANDLE,&_scImageIndex);
+
+    if (result==VK_ERROR_OUT_OF_DATE_KHR)
+    {
+        //todo: recreate swapchain
+        return;
+    }else if (result!=VK_SUCCESS&&result!=VK_SUBOPTIMAL_KHR)
+    {
+        throw std::runtime_error("failed to acquire swap chain image!");
+    }
+
+    updateUniformBuffers(_currentFrame);
+    recordRenderCommandBuffer(_combineCommandBuffer[_currentFrame],_scImageIndex);
+
+    VkPipelineStageFlags waitStage=VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+    VkSubmitInfo submitInfo{};
+    submitInfo.sType=VK_STRUCTURE_TYPE_SUBMIT_INFO;
+    submitInfo.pWaitDstStageMask=&waitStage;
+
+    submitInfo.waitSemaphoreCount=1;
+    submitInfo.pWaitSemaphores=&_imageAvailableSemaphores[_currentFrame];
+
+    submitInfo.commandBufferCount=1;
+    submitInfo.pCommandBuffers=&_gbufferCommandBuffer[_currentFrame];
+
+    submitInfo.signalSemaphoreCount=1;
+    submitInfo.pSignalSemaphores=&_gbufferSemaphores[_currentFrame];
+
+    if (vkQueueSubmit(_vkSetup->_graphicsQueue,1,&submitInfo,VK_NULL_HANDLE)!=VK_SUCCESS)
+    {
+        throw std::runtime_error("failed to submit draw gbuffer command buffer!");
+    }
+
+    submitInfo.waitSemaphoreCount=1;
+    submitInfo.pWaitSemaphores=&_gbufferSemaphores[_currentFrame];
+
+    submitInfo.signalSemaphoreCount=1;
+    submitInfo.pSignalSemaphores=&_renderFinishedSemaphores[_currentFrame];
+
+    submitInfo.commandBufferCount=1;
+    submitInfo.pCommandBuffers=&_combineCommandBuffer[_currentFrame];
+
+    vkResetFences(_vkSetup->_device,1,&_inFlightFences[_currentFrame]);
+
+    if (vkQueueSubmit(_vkSetup->_graphicsQueue,1,&submitInfo,_inFlightFences[_currentFrame])!=VK_SUCCESS)
+    {
+        throw std::runtime_error("failed to submit draw combined command buffer!");
+    }
+    
+    VkPresentInfoKHR presentInfo{};
+    presentInfo.sType=VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
+
+    presentInfo.waitSemaphoreCount=1;
+    presentInfo.pWaitSemaphores=&_renderFinishedSemaphores[_currentFrame];
+
+    presentInfo.swapchainCount=1;
+    presentInfo.pSwapchains=&_swapChain->_swapChain;
+    presentInfo.pImageIndices=&_scImageIndex;
+
+    result=vkQueuePresentKHR(_vkSetup->_presentQueue,&presentInfo);
+
+   
+    if (result==VK_ERROR_OUT_OF_DATE_KHR||result==VK_SUBOPTIMAL_KHR||_frameBufferResized)
+    {
+        _frameBufferResized=false;
+        //todo:recreate swap chain
+    }else if (result!=VK_SUCCESS)
+    {
+        throw std::runtime_error("failed to present swap chain image!");
+    }
+    
+
+    _currentFrame=(_currentFrame+1)%MAX_FRAMES_IN_FLIGHT;
+    
     
 }

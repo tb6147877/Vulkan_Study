@@ -33,5 +33,5 @@ float linZ (float z, float n, float f) {
 }
 
 void main(){
-    outColor=texture(samplerAlbedo,inUV);
+    outColor=texture(samplerPosition,inUV);
 }

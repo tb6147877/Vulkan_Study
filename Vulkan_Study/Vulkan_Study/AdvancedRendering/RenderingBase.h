@@ -31,10 +31,12 @@ public:
 
     //-Descriptor initialisation functions--------------------------------------------
     virtual void createDescriptorSetLayout()=0;
-    virtual void createUniformBuffers()=0;
-    virtual void createDescriptorPool()=0;
+    virtual void createUniformBuffers();
+    virtual void createDescriptorPool();
     virtual void createDescriptorSets()=0;
     virtual void updateUniformBuffers(uint32_t curImage)=0;
+    virtual void updateVertUniformBuffer(uint32_t imgIndex, const UniformBufferObjectVert& ubo);
+    virtual void updateFragUniformBuffer(uint32_t imgIndex, const UniformBufferObjectFrag& ubo);
 
     //-Command buffer initialisation functions
     virtual void createCommandPool();
@@ -59,4 +61,7 @@ public:
     VkCommandPool _renderCommandPool;
     VkRenderPass _outputRenderPass;
     VkPipelineLayout _pipelineLayout;
+    VulkanBuffer _vertUniformBuffer;
+    VulkanBuffer _fragUniformBuffer;
+    VkDescriptorPool _descriptorPool;
 };

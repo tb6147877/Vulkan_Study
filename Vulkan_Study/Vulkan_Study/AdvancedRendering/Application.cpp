@@ -31,7 +31,8 @@ void Application::mainLoop()
         {
             break;
         }
-        _basicRenderer->drawFrame();
+        //_basicRenderer->drawFrame();
+        _deferredRenderer->drawFrame();
         _prevTime=_currTime;
     }
     vkDeviceWaitIdle(_vkSetup._device);
@@ -54,8 +55,8 @@ void Application::initVulkan()
 {
     _vkSetup.initSetup(_window);
     _swapChain.initSwapchain(&_vkSetup);
-    _basicRenderer = new ForwardRendering();
-    _basicRenderer->initRenderer(&_vkSetup,&_swapChain,&_model);
+    /*_basicRenderer = new ForwardRendering();
+    _basicRenderer->initRenderer(&_vkSetup,&_swapChain,&_model);*/
 
     _deferredRenderer=new DeferredRendering();
     _deferredRenderer->initRenderer(&_vkSetup,&_swapChain,&_model);
@@ -65,18 +66,26 @@ void Application::initScene()
 {
     _camera=Camera(glm::vec3{0.0f,0.0f,0.0f}, glm::vec3{ 0.0f,0.0f,1.0f },0,0);
     _model.loadModel(MODEL_PATH);
-    _model.loadModelTextures(&_vkSetup,_basicRenderer->_renderCommandPool,MODEL_TEXTURES_PATH);
-    _model.generateModelVertexBuffer(&_vkSetup,_basicRenderer->_renderCommandPool);
+    /*_model.loadModelTextures(&_vkSetup,_basicRenderer->_renderCommandPool,MODEL_TEXTURES_PATH);
+    _model.generateModelVertexBuffer(&_vkSetup,_basicRenderer->_renderCommandPool);*/
+    _model.loadModelTextures(&_vkSetup,_deferredRenderer->_renderCommandPool,MODEL_TEXTURES_PATH);
+    _model.generateModelVertexBuffer(&_vkSetup,_deferredRenderer->_renderCommandPool);
+    
     _pointLights.push_back({ {5.0f, 5.0f, 5.0f, 0.0f}, {0.5f, 0.5f, 0.5f, 40.0f} }) ;
     _spotLight={{5.0f,-5.0f,0.0f},0.1f,40.0f};
 }
 
 void Application::prepareRendering()
 {
-    _basicRenderer->createDescriptorSets();
+    /*_basicRenderer->createDescriptorSets();
     _basicRenderer->recordCommandBuffers();
     _basicRenderer->SetCamera(&_camera);
-    _basicRenderer->SetPointLights(_pointLights);
+    _basicRenderer->SetPointLights(_pointLights);*/
+
+    _deferredRenderer->createDescriptorSets();
+    _deferredRenderer->recordCommandBuffers();
+    _deferredRenderer->SetCamera(&_camera);
+    _deferredRenderer->SetPointLights(_pointLights);
 }
 
 void Application::initWindow()

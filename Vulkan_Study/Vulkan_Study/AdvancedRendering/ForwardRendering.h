@@ -19,12 +19,8 @@ public:
 
     //-Descriptor initialisation functions--------------------------------------------
     virtual void createDescriptorSetLayout() override;
-    virtual void createUniformBuffers() override;
-    virtual void createDescriptorPool() override;
     virtual void createDescriptorSets() override;
     virtual void updateUniformBuffers(uint32_t curImage) override;
-    void updateVertUniformBuffer(uint32_t imgIndex, const UniformBufferObjectVert& ubo);
-    void updateFragUniformBuffer(uint32_t imgIndex, const UniformBufferObjectFrag& ubo);
 
     //-Command buffer initialisation functions------------------------------------------------
     virtual void createCommandBuffer() override;
@@ -50,11 +46,7 @@ public:
     
     VkPipeline _pipeline;
     std::vector<VkCommandBuffer> _renderCommandBuffer;
-
-    VulkanBuffer _vertUniformBuffer;
-    VulkanBuffer _fragUniformBuffer;
-
-    VkDescriptorPool _descriptorPool;
+    
     std::vector<VkDescriptorSet> _descriptorSets;
 
     //1 semaphore per frame, GPU-GPU sync

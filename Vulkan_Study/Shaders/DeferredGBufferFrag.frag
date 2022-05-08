@@ -11,7 +11,7 @@ layout(location=0) out vec4 outPosition;
 layout(location=1) out vec4 outNormal;
 layout(location=2) out vec4 outAlbedo;
 
-const float far=20.0f;
+const float far=40.0f;
 const float near=0.1;
 
 float linearize_Z(float z , float zNear , float zFar){

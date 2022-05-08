@@ -19,19 +19,42 @@ layout (binding=4) uniform UniformBufferObjectFrag{
 layout (location = 0) in vec2 inUV;
 
 layout(location = 0) out vec4 outColor;
+#define POINT_LIGHT_NUM 1
 
-const vec3 ambient = vec3(0.2f, 0.2f, 0.2f);
-
-#define NEAR 0.1f
-#define FAR 40.0f
-
-// compute linear depth, taken from:
-// https://learnopengl.com/Advanced-OpenGL/Depth-testing
-// (formula has been factorised)
-float linZ (float z, float n, float f) {
-	return n / (f - f*z + n*z);
-}
+vec3 calculatePointLight(PointLight light, vec3 viewDir, vec3 normal, vec3 fragPos, vec3 diffuseColor);
 
 void main(){
-    outColor=texture(samplerPosition,inUV);
+    vec3 result = vec3(0.0);
+    vec3 fragPos=texture(samplerPosition,inUV).xyz;
+    vec3 viewDir=normalize(ubo.viewPos.xyz-fragPos);
+    vec3 normal=normalize(texture(samplerNormal,inUV).xyz);
+    vec3 diffuseColor=texture(samplerAlbedo,inUV).xyz;
+    for(int i=0;i<POINT_LIGHT_NUM;i++){
+        result += calculatePointLight(ubo.lights[i],viewDir,normal,fragPos,diffuseColor);
+    }
+    
+    outColor=vec4(result,1.0);    
+}
+
+vec3 calculatePointLight(PointLight light, vec3 viewDir, vec3 normal, vec3 fragPos, vec3 diffuseColor)
+{
+    float dis=length(light.pos.xyz-fragPos);
+    float atten=1.0-clamp(dis/light.color_radius.w,0.0,1.0);
+    
+    vec3 result=vec3(0.0);
+    vec3 lightDir=normalize(light.pos.xyz-fragPos);
+    float diff=max(dot(normal,lightDir),0.0);
+    vec3 halfDir=normalize(viewDir+lightDir);
+    float spec=pow(max(dot(halfDir,normal),0.0),32.0);
+
+    vec3 ambient=light.color_radius.xyz*diffuseColor*0.1;
+    vec3 diffuse=light.color_radius.xyz*diffuseColor*diff;
+    vec3 specular=light.color_radius.xyz*0.4*spec;
+    
+    ambient*=atten;
+    diffuse*=atten;
+    specular*=atten;
+    
+    result=ambient+diffuse+specular;
+    return result;
 }

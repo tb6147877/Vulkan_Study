@@ -16,7 +16,7 @@ void Application::run()
     initScene();
     prepareRendering();
     mainLoop();
-    //cleanup();
+    cleanup();
 }
 
 void Application::mainLoop()
@@ -40,8 +40,11 @@ void Application::mainLoop()
 
 void Application::cleanup()
 {
-    _basicRenderer->cleanupRenderer();
-    delete _basicRenderer;
+    _model.cleanupModel(&_vkSetup);
+    /*_basicRenderer->cleanupRenderer();
+    delete _basicRenderer;*/
+    _deferredRenderer->cleanupRenderer();
+    delete _deferredRenderer;
     _swapChain.cleanupSwapChain();
     _vkSetup.cleanupSetup();
     

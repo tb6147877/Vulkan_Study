@@ -37,6 +37,9 @@ public:
     void loadObjModel(const std::string& path);
     void loadGltfModel(const std::string& path);
 
+    //-Cleanup------------------------------------------------------------------
+    void cleanupModel(VulkanSetup* vkSetup);
+
     //-File utils----------------------------------------------------------------------
     FileExtension getExtension(const std::string& path);
 

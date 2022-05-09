@@ -28,14 +28,21 @@ void ForwardRendering::initRenderer(VulkanSetup* pVkSetup,SwapChain* swapchain, 
 
 void ForwardRendering::cleanupRenderer()
 {
+    RenderingBase::cleanupRenderer();
     vkDestroyCommandPool(_vkSetup->_device,_renderCommandPool,nullptr);
     
     vkDestroyDescriptorSetLayout(_vkSetup->_device,_descriptorSetLayout,nullptr);
     
-    vkDestroyRenderPass(_vkSetup->_device,_outputRenderPass,nullptr);
     _backFrameBuffer.cleanupFramebuffers();
     vkDestroyPipelineLayout(_vkSetup->_device,_pipelineLayout,nullptr);
     vkDestroyPipeline(_vkSetup->_device,_pipeline,nullptr);
+
+    for (size_t i=0;i<MAX_FRAMES_IN_FLIGHT;i++)
+    {
+        vkDestroySemaphore(_vkSetup->_device,_imageAvailableSemaphores[i],nullptr);
+        vkDestroySemaphore(_vkSetup->_device,_renderFinishedSemaphores[i],nullptr);
+        vkDestroyFence(_vkSetup->_device,_inFlightFences[i],nullptr);
+    }
 }
 
 
@@ -316,11 +323,15 @@ void ForwardRendering::drawFrame()
 
     vkResetFences(_vkSetup->_device,1,&_inFlightFences[_currentFrame]);
 
+    // submit the command buffer to the graphics queue, takes an array of submitinfo when work load is much larger
+    // last param is a fence, which is signaled when the cmd buffer finishes executing and is used to inform that the frame has finished
+    // being rendered (the commands were all executed). The next frame can start rendering!
     if (vkQueueSubmit(_vkSetup->_graphicsQueue,1,&submitInfo,_inFlightFences[_currentFrame])!=VK_SUCCESS)
     {
         throw std::runtime_error("failed to submit draw command buffer!");
     }
-    
+
+    // submitting the result back to the swap chain to have it shown onto the screen
     VkPresentInfoKHR presentInfo{};
     presentInfo.sType=VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
 
@@ -331,6 +342,7 @@ void ForwardRendering::drawFrame()
     presentInfo.pSwapchains=&_swapChain->_swapChain;
     presentInfo.pImageIndices=&_scImageIndex;
 
+    // submit request to put image from the swap chain to the presentation queue
     result=vkQueuePresentKHR(_vkSetup->_presentQueue,&presentInfo);
 
    
@@ -343,7 +355,7 @@ void ForwardRendering::drawFrame()
         throw std::runtime_error("failed to present swap chain image!");
     }
     
-
+    // increment current frame
     _currentFrame=(_currentFrame+1)%MAX_FRAMES_IN_FLIGHT;
     
 }

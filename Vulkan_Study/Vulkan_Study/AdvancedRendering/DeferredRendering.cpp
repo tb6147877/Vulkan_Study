@@ -26,7 +26,32 @@ void DeferredRendering::initRenderer(VulkanSetup* pVkSetup, SwapChain* swapchain
     createSyncObjects();
 }
 void DeferredRendering::cleanupRenderer(){
-    //todo:clean all vulkan objs
+    RenderingBase::cleanupRenderer();
+    vkDestroyRenderPass(_vkSetup->_device,_deferredRenderPass,nullptr);
+    vkDestroyCommandPool(_vkSetup->_device,_renderCommandPool,nullptr);
+    
+    vkDestroyDescriptorSetLayout(_vkSetup->_device,_descriptorSetLayout,nullptr);
+    _backFrameBuffer.cleanupFramebuffers();
+    
+    vkDestroyFramebuffer(_vkSetup->_device,_deferredFrameBuffer,nullptr);
+    vkDestroySampler(_vkSetup->_device,_colorAttachmentSampler,nullptr);
+    for(auto& kv:_attachments)
+    {
+        kv.second.vulkanImage.cleanupImage(_vkSetup);
+        vkDestroyImageView(_vkSetup->_device,kv.second.imageView,nullptr);
+    }
+    
+    vkDestroyPipelineLayout(_vkSetup->_device,_pipelineLayout,nullptr);
+    vkDestroyPipeline(_vkSetup->_device,_combinePipeline,nullptr);
+    vkDestroyPipeline(_vkSetup->_device,_gbufferPipeline,nullptr);
+
+    for (size_t i=0;i<MAX_FRAMES_IN_FLIGHT;i++)
+    {
+        vkDestroySemaphore(_vkSetup->_device,_gbufferSemaphores[i],nullptr);
+        vkDestroySemaphore(_vkSetup->_device,_imageAvailableSemaphores[i],nullptr);
+        vkDestroySemaphore(_vkSetup->_device,_renderFinishedSemaphores[i],nullptr);
+        vkDestroyFence(_vkSetup->_device,_inFlightFences[i],nullptr);
+    }
 }
 
 void DeferredRendering::createFrameBufferAttachment(const std::string& name,VkFormat format,VkImageUsageFlagBits usage, const VkCommandPool& commandPool)
@@ -564,9 +589,11 @@ void DeferredRendering::drawFrame()
 
     updateUniformBuffers(_currentFrame);
     recordRenderCommandBuffer(_combineCommandBuffer[_currentFrame],_scImageIndex);
-
+    
     VkPipelineStageFlags waitStage=VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
     VkSubmitInfo submitInfo{};
+
+    //gbuffer rendering
     submitInfo.sType=VK_STRUCTURE_TYPE_SUBMIT_INFO;
     submitInfo.pWaitDstStageMask=&waitStage;
 
@@ -584,6 +611,7 @@ void DeferredRendering::drawFrame()
         throw std::runtime_error("failed to submit draw gbuffer command buffer!");
     }
 
+    //combine rendering
     submitInfo.waitSemaphoreCount=1;
     submitInfo.pWaitSemaphores=&_gbufferSemaphores[_currentFrame];
 

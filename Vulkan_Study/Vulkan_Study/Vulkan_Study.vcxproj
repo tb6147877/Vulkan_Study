@@ -163,7 +163,6 @@
     <ClCompile Include="AdvancedRendering\DeferredRendering.cpp" />
     <ClCompile Include="AdvancedRendering\DepthResource.cpp" />
     <ClCompile Include="AdvancedRendering\FrameBuffer.cpp" />
-    <ClCompile Include="AdvancedRendering\GBuffer.cpp" />
     <ClCompile Include="AdvancedRendering\Image.cpp" />
     <ClCompile Include="AdvancedRendering\Model.cpp" />
     <ClCompile Include="AdvancedRendering\Orientation.cpp" />
@@ -1131,7 +1130,6 @@
     <ClInclude Include="AdvancedRendering\DeferredRendering.h" />
     <ClInclude Include="AdvancedRendering\DepthResource.h" />
     <ClInclude Include="AdvancedRendering\FrameBuffer.h" />
-    <ClInclude Include="AdvancedRendering\GBuffer.h" />
     <ClInclude Include="AdvancedRendering\Image.h" />
     <ClInclude Include="AdvancedRendering\Model.h" />
     <ClInclude Include="AdvancedRendering\Orientation.h" />

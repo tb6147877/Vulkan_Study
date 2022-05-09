@@ -2,7 +2,6 @@
 #include <iostream>
 
 #include "Camera.h"
-#include "GBuffer.h"
 
 #include "SpotLight.h"
 #include "VulkanSetup.h"

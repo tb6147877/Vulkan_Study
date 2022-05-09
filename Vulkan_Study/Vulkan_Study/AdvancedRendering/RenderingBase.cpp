@@ -5,6 +5,15 @@
 #include "DepthResource.h"
 #include "Utils.h"
 
+void RenderingBase::cleanupRenderer()
+{
+    _vertUniformBuffer.cleanupBufferData(_vkSetup->_device);
+    _fragUniformBuffer.cleanupBufferData(_vkSetup->_device);
+
+    vkDestroyRenderPass(_vkSetup->_device,_outputRenderPass,nullptr);
+    vkDestroyDescriptorPool(_vkSetup->_device,_descriptorPool,nullptr);
+}
+
 void RenderingBase::createCommandPool()
 {
     utils::createCommandPool(*_vkSetup,&_renderCommandPool,VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT);

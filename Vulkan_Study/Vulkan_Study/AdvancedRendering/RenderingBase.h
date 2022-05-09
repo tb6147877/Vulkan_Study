@@ -21,7 +21,7 @@ public:
 public:
     //-Initialisation and cleanup----------------------------------------
     virtual void initRenderer(VulkanSetup* pVkSetup, SwapChain* swapchain, Model* model)=0;
-    virtual void cleanupRenderer()=0;
+    virtual void cleanupRenderer();
 
     //-Render pass-------------------------------------------------------
     virtual void createOutputRenderPass();

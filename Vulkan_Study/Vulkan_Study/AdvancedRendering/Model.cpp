@@ -90,6 +90,16 @@ void Model::loadGltfModel(const std::string& path)
     //todo: support gltf format
 }
 
+void Model::cleanupModel(VulkanSetup* vkSetup)
+{
+    for(size_t i=0;i<_textures.size();i++)
+    {
+        _textures[i].cleanupTexture();
+    }
+    _vertexBuffer.cleanupBufferData(vkSetup->_device);
+    _indexBuffer.cleanupBufferData(vkSetup->_device);
+}
+
 //-File utils----------------------------------------------------------------------
 Model::FileExtension Model::getExtension(const std::string& path)
 {

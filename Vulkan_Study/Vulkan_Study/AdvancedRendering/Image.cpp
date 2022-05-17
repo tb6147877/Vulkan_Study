@@ -1,4 +1,4 @@
-﻿#include "Image.h"
+#include "Image.h"
 
 #include <iostream>
 #define STB_IMAGE_IMPLEMENTATION
@@ -48,7 +48,7 @@ void VulkanImage::createImage(const VulkanSetup* vkSetup, const VkCommandPool& c
     VkMemoryAllocateInfo allocInfo{};
     allocInfo.sType=VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
     allocInfo.allocationSize=memRequirements.size;
-    allocInfo.memoryTypeIndex=utils::findMemoryType(&vkSetup->_physicalDevice, memRequirements.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+    allocInfo.memoryTypeIndex=utils::findMemoryType(&vkSetup->_physicalDevice, memRequirements.memoryTypeBits, info.properties);
     if (vkAllocateMemory(vkSetup->_device,&allocInfo,nullptr,&info.pVulkanImage->_imageMemory)!=VK_SUCCESS)
     {
         throw std::runtime_error("failed to allocate image memory!");
@@ -177,7 +177,8 @@ Image VulkanImage::loadImageFromFile(const std::string& path)
     stbi_set_flip_vertically_on_load(true);
     Image image{};
     int width, height, channels;
-    unsigned char* data=stbi_load(path.c_str(),&width,&height,&channels,0);
+    stbi_uc* data=stbi_load(path.c_str(),&width,&height,&channels,STBI_rgb_alpha);//force the image to have a alpha channel, and auto fill the image data
+    channels=4;//because channels is the actual channel numbers of source file, so we need to set it to 4
     if (!data)
     {
         throw std::runtime_error("could not load image");

@@ -18,4 +18,11 @@ C:/VulkanSDK/1.2.198.1/Bin/glslc.exe DeferredGBufferFrag.frag -o DeferredGBuffer
 
 C:/VulkanSDK/1.2.198.1/Bin/glslc.exe DeferredCombineVert.vert -o DeferredCombineVert.spv
 C:/VulkanSDK/1.2.198.1/Bin/glslc.exe DeferredCombineFrag.frag -o DeferredCombineFrag.spv
+
+C:/VulkanSDK/1.2.198.1/Bin/glslc.exe Final_Vert.vert -o Final_Vert.spv
+C:/VulkanSDK/1.2.198.1/Bin/glslc.exe Final_Frag.frag -o Final_Frag.spv
+C:/VulkanSDK/1.2.198.1/Bin/glslc.exe DFD_Gbuffer_Vert.vert -o DFD_Gbuffer_Vert.spv
+C:/VulkanSDK/1.2.198.1/Bin/glslc.exe DFD_Gbuffer_Frag.frag -o DFD_Gbuffer_Frag.spv
+C:/VulkanSDK/1.2.198.1/Bin/glslc.exe DFD_Lighting_Vert.vert -o DFD_Lighting_Vert.spv
+C:/VulkanSDK/1.2.198.1/Bin/glslc.exe DFD_Lighting_Frag.frag -o DFD_Lighting_Frag.spv
 pause

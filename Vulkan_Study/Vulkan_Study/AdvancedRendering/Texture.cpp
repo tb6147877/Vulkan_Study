@@ -28,7 +28,8 @@ void Texture::createTexture(VulkanSetup* pVkSetup, const VkCommandPool& commandP
     imgCreateInfo.height=image.height;
     imgCreateInfo.format=image.format;
     imgCreateInfo.tiling=VK_IMAGE_TILING_OPTIMAL;
-    imgCreateInfo.usage=VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT|VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
+    //imgCreateInfo.usage=VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT|VK_MEMORY_PROPERTY_HOST_COHERENT_BIT;
+    imgCreateInfo.usage=VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
     imgCreateInfo.properties=VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
     imgCreateInfo.pVulkanImage=&_textureImage;
 

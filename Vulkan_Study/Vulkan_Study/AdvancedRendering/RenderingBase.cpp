@@ -22,41 +22,18 @@ void RenderingBase::createCommandPool()
 void RenderingBase::createOutputRenderPass()
 {
     //specify a color attachment to the render pass
-    VkAttachmentDescription colorAttachment{};
-    colorAttachment.format=_swapChain->_imageFormat;//swapchian image format
-    colorAttachment.samples=VK_SAMPLE_COUNT_1_BIT;//for multisample
-    //The loadOp and storeOp determine what to do with the data in the attachment
-    //before rendering and after rendering.
-    colorAttachment.loadOp=VK_ATTACHMENT_LOAD_OP_CLEAR;//Clear the values to a constant at the start
-    colorAttachment.storeOp=VK_ATTACHMENT_STORE_OP_STORE;//Rendered contents will be stored in memory and can be read later
-    colorAttachment.stencilLoadOp=VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-    colorAttachment.stencilStoreOp=VK_ATTACHMENT_STORE_OP_DONT_CARE;
-    colorAttachment.initialLayout=VK_IMAGE_LAYOUT_UNDEFINED;
-    colorAttachment.finalLayout=VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;//if this image is go to swap chain, it must be this option
+    VkAttachmentDescription colorAttachment=createOutputColorAttachmentDescription();
 
     //specify a depth attachment to the render pass
-    VkAttachmentDescription depthAttachment{};
-    depthAttachment.format=DepthResource::findDepthFormat(_vkSetup);
-    depthAttachment.samples=VK_SAMPLE_COUNT_1_BIT;
-    depthAttachment.loadOp=VK_ATTACHMENT_LOAD_OP_CLEAR;
-    depthAttachment.storeOp=VK_ATTACHMENT_STORE_OP_DONT_CARE;
-    depthAttachment.stencilLoadOp=VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-    depthAttachment.stencilStoreOp=VK_ATTACHMENT_STORE_OP_DONT_CARE;
-    depthAttachment.initialLayout=VK_IMAGE_LAYOUT_UNDEFINED;
-    depthAttachment.finalLayout=VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+    VkAttachmentDescription depthAttachment=createOutputDepthAttachmentDescription();
 
     /**************************************************************************************************************
     // A single render pass consists of multiple subpasses, which are subsequent rendering operations depending on 
     // content of framebuffers on previous passes (eg post processing). Grouping subpasses into a single render 
     // pass lets Vulkan optimise every subpass references 1 or more attachments.
     **************************************************************************************************************/
-    VkAttachmentReference colorAttachmentRef{};
-    colorAttachmentRef.attachment=0;
-    colorAttachmentRef.layout=VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-
-    VkAttachmentReference depthAttachmentRef{};
-    depthAttachmentRef.attachment=1;
-    depthAttachmentRef.layout=VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+    VkAttachmentReference colorAttachmentRef=createOutputColorAttachmentReference();
+    VkAttachmentReference depthAttachmentRef=createOutputDepthAttachmentReference();
 
     //the subpass
     VkSubpassDescription subpass{};
@@ -107,6 +84,49 @@ void RenderingBase::createOutputRenderPass()
     {
         throw std::runtime_error("failed to create render pass!");
     }
+}
+
+VkAttachmentDescription RenderingBase::createOutputColorAttachmentDescription()
+{
+    VkAttachmentDescription colorAttachment{};
+    colorAttachment.format=_swapChain->_imageFormat;//swapchian image format
+    colorAttachment.samples=VK_SAMPLE_COUNT_1_BIT;//for multisample
+    //The loadOp and storeOp determine what to do with the data in the attachment
+    //before rendering and after rendering.
+    colorAttachment.loadOp=VK_ATTACHMENT_LOAD_OP_CLEAR;//Clear the values to a constant at the start
+    colorAttachment.storeOp=VK_ATTACHMENT_STORE_OP_STORE;//Rendered contents will be stored in memory and can be read later
+    colorAttachment.stencilLoadOp=VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+    colorAttachment.stencilStoreOp=VK_ATTACHMENT_STORE_OP_DONT_CARE;
+    colorAttachment.initialLayout=VK_IMAGE_LAYOUT_UNDEFINED;
+    colorAttachment.finalLayout=VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;//if this image is go to swap chain, it must be this option
+    return colorAttachment;
+}
+VkAttachmentReference RenderingBase::createOutputColorAttachmentReference()
+{
+    VkAttachmentReference colorAttachmentRef{};
+    colorAttachmentRef.attachment=0;
+    colorAttachmentRef.layout=VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+    return colorAttachmentRef;
+}
+VkAttachmentDescription RenderingBase::createOutputDepthAttachmentDescription()
+{
+    VkAttachmentDescription depthAttachment{};
+    depthAttachment.format=DepthResource::findDepthFormat(_vkSetup);
+    depthAttachment.samples=VK_SAMPLE_COUNT_1_BIT;
+    depthAttachment.loadOp=VK_ATTACHMENT_LOAD_OP_CLEAR;
+    depthAttachment.storeOp=VK_ATTACHMENT_STORE_OP_DONT_CARE;
+    depthAttachment.stencilLoadOp=VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+    depthAttachment.stencilStoreOp=VK_ATTACHMENT_STORE_OP_DONT_CARE;
+    depthAttachment.initialLayout=VK_IMAGE_LAYOUT_UNDEFINED;
+    depthAttachment.finalLayout=VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+    return depthAttachment;
+}
+VkAttachmentReference RenderingBase::createOutputDepthAttachmentReference()
+{
+    VkAttachmentReference depthAttachmentRef{};
+    depthAttachmentRef.attachment=1;
+    depthAttachmentRef.layout=VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+    return depthAttachmentRef;
 }
 
 void RenderingBase::createUniformBuffers()

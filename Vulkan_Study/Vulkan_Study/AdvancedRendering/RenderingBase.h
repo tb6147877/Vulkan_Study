@@ -25,6 +25,10 @@ public:
 
     //-Render pass-------------------------------------------------------
     virtual void createOutputRenderPass();
+    virtual VkAttachmentDescription createOutputColorAttachmentDescription();
+    virtual VkAttachmentReference createOutputColorAttachmentReference();
+    virtual VkAttachmentDescription createOutputDepthAttachmentDescription();
+    virtual VkAttachmentReference createOutputDepthAttachmentReference();
 
     //-Pipelines-----------------------------------------------------------------
     virtual void createPipeline()=0;

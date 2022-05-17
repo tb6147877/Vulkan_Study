@@ -13,7 +13,7 @@ const uint32_t HEIGHT=1080;
 
 //path to the model
 const std::string MODEL_PATH="D:/Project/Vulkan_Study/Vulkan_Study/Models/viking_room.obj";
-const std::vector<std::string> MODEL_TEXTURES_PATH={"D:/Project/Vulkan_Study/Vulkan_Study/Textures/viking_room.png"};
+const std::vector<std::string> MODEL_TEXTURES_PATH={"D:/Project/Vulkan_Study/Vulkan_Study/Textures/viking_room2.png"};
 
 //forward rendering shader path
 const std::string FWD_VERT_SHADER="D:/Project/Vulkan_Study/Vulkan_Study/Shaders/ForwardVert.spv";
@@ -24,6 +24,16 @@ const std::string DFD_GBUFFER_VERT_SHADER="D:/Project/Vulkan_Study/Vulkan_Study/
 const std::string DFD_GBUFFER_FRAG_SHADER="D:/Project/Vulkan_Study/Vulkan_Study/Shaders/DeferredGBufferFrag.spv";
 const std::string DFD_COMBINE_VERT_SHADER="D:/Project/Vulkan_Study/Vulkan_Study/Shaders/DeferredCombineVert.spv";
 const std::string DFD_COMBINE_FRAG_SHADER="D:/Project/Vulkan_Study/Vulkan_Study/Shaders/DeferredCombineFrag.spv";
+
+//deferred rendering with subpass shader path
+const std::string DFD_SUBPASS_GBUFFER_VERT_SHADER="D:/Project/Vulkan_Study/Vulkan_Study/Shaders/DFD_Gbuffer_Vert.spv";
+const std::string DFD_SUBPASS_GBUFFER_FRAG_SHADER="D:/Project/Vulkan_Study/Vulkan_Study/Shaders/DFD_Gbuffer_Frag.spv";
+const std::string DFD_SUBPASS_LIGHTING_VERT_SHADER="D:/Project/Vulkan_Study/Vulkan_Study/Shaders/DFD_Lighting_Vert.spv";
+const std::string DFD_SUBPASS_LIGHTING_FRAG_SHADER="D:/Project/Vulkan_Study/Vulkan_Study/Shaders/DFD_Lighting_Frag.spv";
+
+//final shader path
+const std::string FINAL_VERT_SHADER="D:/Project/Vulkan_Study/Vulkan_Study/Shaders/Final_Vert.spv";
+const std::string FINAL_FRAG_SHADER="D:/Project/Vulkan_Study/Vulkan_Study/Shaders/Final_Frag.spv";
 
 namespace Axes {
     // world axes

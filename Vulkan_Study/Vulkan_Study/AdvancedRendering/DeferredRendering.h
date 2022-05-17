@@ -23,7 +23,8 @@ public:
 
     //-Renderpass---------------------------------------------------------------
     void createDeferredRenderPass();
-    void createFrameBufferAttachment(const std::string& name,VkFormat format,VkImageUsageFlagBits usage, const VkCommandPool& commandPool);
+    void createFrameBufferAttachment(const std::string& name,VkFormat format,VkImageUsageFlagBits usage,
+        const VkCommandPool& commandPool,const int index=0);
 
     //-Framebuffer-----------------------------------------------------------------
     void createDeferredFramebuffer();
@@ -70,6 +71,7 @@ public:
 
     VkPipeline _combinePipeline;
     VkPipeline _gbufferPipeline;
+    VkPipeline _finalPipeline;
 
     //1 semaphore per frame, GPU-GPU sync
     std::vector<VkSemaphore> _imageAvailableSemaphores;

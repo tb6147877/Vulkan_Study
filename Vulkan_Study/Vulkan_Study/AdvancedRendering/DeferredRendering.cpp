@@ -684,6 +684,7 @@ void DeferredRendering::initRenderer(VulkanSetup* pVkSetup, SwapChain* swapchain
     createDescriptorPool();
     createCommandBuffer();
     createSyncObjects();
+    initAodDemo();
 }
 
 void DeferredRendering::cleanupRenderer(){
@@ -713,6 +714,16 @@ void DeferredRendering::cleanupRenderer(){
         vkDestroySemaphore(_vkSetup->_device,_imageAvailableSemaphores[i],nullptr);
         vkDestroySemaphore(_vkSetup->_device,_renderFinishedSemaphores[i],nullptr);
         vkDestroyFence(_vkSetup->_device,_inFlightFences[i],nullptr);
+    }
+}
+
+void DeferredRendering::initAodDemo()
+{
+    _aodTextures.resize(AOD_PIC_PATHS.size());
+    for (size_t i=0;i<AOD_PIC_PATHS.size();i++)
+    {
+        Image img=VulkanImage::loadImageFromFile(AOD_PIC_PATHS[i]);
+        _aodTextures[i].createTexture(_vkSetup,_renderCommandPool,img);
     }
 }
 
@@ -777,7 +788,10 @@ void DeferredRendering::createDescriptorSetLayout()
         //binding 4: fragment shader uniform buffer
         utils::initDescriptorSetLayoutBinding(4, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_FRAGMENT_BIT),
         //binding 5: output texture
-        utils::initDescriptorSetLayoutBinding(5, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT)
+        utils::initDescriptorSetLayoutBinding(5, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT),
+        //binding 6:aod test
+        utils::initDescriptorSetLayoutBinding(6, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT,9)
+        
     };
     utils::createDescriptorSetLayout(&_vkSetup->_device,&_descriptorSetLayout,setLayoutBindings);
 }
@@ -1040,7 +1054,7 @@ void DeferredRendering::createDescriptorSets(){
     std::vector<VkDescriptorSetLayout> layouts(MAX_FRAMES_IN_FLIGHT,_descriptorSetLayout);
     VkDescriptorSetAllocateInfo allocInfo=utils::initDescriptorSetAllocInfo(_descriptorPool,1,layouts.data());
 
-    //gbuffer descriptor set
+    //gbuffer and lighting descriptor set
     if (vkAllocateDescriptorSets(_vkSetup->_device,&allocInfo,&_gbufferDescriptorSet)!=VK_SUCCESS)
     {
         throw std::runtime_error("failed to alloc gbuffer descriptor set!");
@@ -1095,7 +1109,7 @@ void DeferredRendering::createDescriptorSets(){
 
     vkUpdateDescriptorSets(_vkSetup->_device,static_cast<uint32_t>(writeDescriptorSets.size()),writeDescriptorSets.data(),0,nullptr);
 
-    //combine descriptor sets
+    //final descriptor sets
     allocInfo.descriptorSetCount=static_cast<uint32_t>(layouts.size());
     _descriptorSets.resize(layouts.size());
 
@@ -1108,12 +1122,25 @@ void DeferredRendering::createDescriptorSets(){
     texDescriptorutOutput.imageLayout=VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
     texDescriptorutOutput.imageView=_attachments["output"].imageView;
     texDescriptorutOutput.sampler=_colorAttachmentSampler;
+
+    //==================================================================================
+    VkDescriptorImageInfo	descriptorImageInfos[9];
+
+    for (uint32_t i = 0; i < _aodTextures.size(); ++i)
+    {
+        descriptorImageInfos[i].sampler = _colorAttachmentSampler;
+        descriptorImageInfos[i].imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+        descriptorImageInfos[i].imageView = _aodTextures[i]._textureImageView;
+    }
+
+    //=================================================================================
     
     
     for (size_t i=0;i<_descriptorSets.size();i++)
     {
         writeDescriptorSets={
-            utils::initWriteDescriptorSet(_descriptorSets[i],5,VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,&texDescriptorutOutput)
+            utils::initWriteDescriptorSet(_descriptorSets[i],5,VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,&texDescriptorutOutput),
+            utils::initWriteDescriptorSet(_descriptorSets[i],6,VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER,descriptorImageInfos,9),
         };
 
         vkUpdateDescriptorSets(_vkSetup->_device,static_cast<uint32_t>(writeDescriptorSets.size()),writeDescriptorSets.data(),0,nullptr);

@@ -137,7 +137,8 @@ namespace utils
     VkDescriptorSetLayoutBinding initDescriptorSetLayoutBinding(
         uint32_t binding,
         VkDescriptorType type,
-        VkPipelineStageFlags flags=0
+        VkPipelineStageFlags flags=0,
+        uint32_t descriptorCount=1
     );
 
     VkDescriptorSetAllocateInfo initDescriptorSetAllocInfo(
@@ -150,14 +151,16 @@ namespace utils
         VkDescriptorSet dst,
         uint32_t binding,
         VkDescriptorType type,
-        VkDescriptorBufferInfo* pBufferInfo
+        VkDescriptorBufferInfo* pBufferInfo,
+        uint32_t descriptorCount=1
     );
 
     VkWriteDescriptorSet initWriteDescriptorSet(
         VkDescriptorSet dst,
         uint32_t binding,
         VkDescriptorType type,
-        VkDescriptorImageInfo* pImageInfo
+        VkDescriptorImageInfo* pImageInfo,
+        uint32_t descriptorCount=1
     );
 
     //-Command buffer structs---------------------------------------------------------

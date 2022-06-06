@@ -156,12 +156,13 @@ namespace utils
     VkDescriptorSetLayoutBinding initDescriptorSetLayoutBinding(
         uint32_t binding,
         VkDescriptorType type,
-        VkPipelineStageFlags flags
+        VkPipelineStageFlags flags,
+        uint32_t descriptorCount
     )
     {
         VkDescriptorSetLayoutBinding descSetLayoutBinding{};
         descSetLayoutBinding.descriptorType=type;
-        descSetLayoutBinding.descriptorCount=1;//change manually later if needed
+        descSetLayoutBinding.descriptorCount=descriptorCount;//change manually later if needed
         descSetLayoutBinding.binding=binding;
         descSetLayoutBinding.stageFlags=flags;
         return descSetLayoutBinding;
@@ -185,7 +186,8 @@ namespace utils
         VkDescriptorSet dst,
         uint32_t binding,
         VkDescriptorType type,
-        VkDescriptorBufferInfo* pBufferInfo
+        VkDescriptorBufferInfo* pBufferInfo,
+        uint32_t descriptorCount
     )
     {
         VkWriteDescriptorSet writeDescriptorSet{};
@@ -193,7 +195,7 @@ namespace utils
         writeDescriptorSet.descriptorType=type;
         writeDescriptorSet.dstSet=dst;
         writeDescriptorSet.dstBinding=binding;
-        writeDescriptorSet.descriptorCount=1;
+        writeDescriptorSet.descriptorCount=descriptorCount;
         writeDescriptorSet.pBufferInfo=pBufferInfo;
         return writeDescriptorSet;
     }
@@ -202,7 +204,8 @@ namespace utils
         VkDescriptorSet dst,
         uint32_t binding,
         VkDescriptorType type,
-        VkDescriptorImageInfo* pImageInfo
+        VkDescriptorImageInfo* pImageInfo,
+        uint32_t descriptorCount
     )
     {
         VkWriteDescriptorSet writeDescriptorSet{};
@@ -210,7 +213,7 @@ namespace utils
         writeDescriptorSet.descriptorType=type;
         writeDescriptorSet.dstSet=dst;
         writeDescriptorSet.dstBinding=binding;
-        writeDescriptorSet.descriptorCount=1;
+        writeDescriptorSet.descriptorCount=descriptorCount;
         writeDescriptorSet.pImageInfo=pImageInfo;
         return writeDescriptorSet;
     }

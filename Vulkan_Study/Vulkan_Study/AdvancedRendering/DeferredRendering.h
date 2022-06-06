@@ -59,6 +59,9 @@ public:
     {
         _pointLights[0]=lights[0];
     }
+
+private:
+    void initAodDemo();
 public:
     //-Members------------------------------------------------------------------
     std::vector<VkCommandBuffer> _gbufferCommandBuffer;
@@ -91,4 +94,8 @@ public:
     glm::vec3 translate = glm::vec3(0.0f);
     glm::vec3 rotate = glm::vec3(0.0f);;
     float scale = 1.0f;
+
+    //just for aod test
+    std::vector<Texture> _aodTextures;
+    
 };

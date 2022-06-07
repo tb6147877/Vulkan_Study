@@ -1,15 +1,4 @@
 #version 450
-/*
-layout (binding = 5) uniform sampler2D outputTex;
-
-layout (location = 0) in vec2 inUV;
-
-layout(location = 0) out vec4 outColor;
-
-void main(){
-    outColor=texture(outputTex,inUV);
-}
-*/
 
 const vec2 RESOLUTION=vec2(1920,1080);
 const int MAX_MARCHING_STEPS=255;
@@ -42,6 +31,73 @@ vec3 rayDirection(float fov,vec2 size,vec2 fragCoord){
     return normalize(vec3(xy,-z));
 }
 
+//计算表面上一点P的法线
+vec3 estimateNormal(vec3 p){
+    return normalize(vec3(
+        sceneSDF(vec3(p.x+EPSILON,p.y,p.z))-sceneSDF(vec3(p.x-EPSILON,p.y,p.z)),
+        sceneSDF(vec3(p.x,p.y+EPSILON,p.z))-sceneSDF(vec3(p.x,p.y-EPSILON,p.z)),
+        sceneSDF(vec3(p.x,p.y,p.z+EPSILON))-sceneSDF(vec3(p.x,p.y,p.z-EPSILON))
+    ));
+}
+
+
+/**
+ * Lighting contribution of a single point light source via Phong illumination.
+ * 
+ * The vec3 returned is the RGB color of the light's contribution.
+ *
+ * k_a: Ambient color
+ * k_d: Diffuse color
+ * k_s: Specular color
+ * alpha: Shininess coefficient
+ * p: position of point being lit
+ * eye: the position of the camera
+ * lightPos: the position of the light
+ * lightIntensity: color/intensity of the light
+ *
+ * See https://en.wikipedia.org/wiki/Phong_reflection_model#Description
+ */
+vec3 phongContribForLight(vec3 k_d,vec3 k_s,float alpha,vec3 p,vec3 eye,vec3 lightPos,
+                            vec3 lightIntensity)
+{
+    vec3 N=estimateNormal(p);
+    vec3 L=normalize(lightPos-p);
+    vec3 V=normalize(eye-p);
+    vec3 R=normalize(reflect(-L,N));
+
+    float dotLN=dot(L,N);
+    float dotRV=dot(R,V);
+
+    if(dotLN<0.0){
+        //light not visible from this point to the surface
+        return vec3(0.0,0.0,0.0);
+    }
+
+    if(dotRV<0.0){
+        //apply only diffuse component, since light reflection in opposite direction as viewer
+        return lightIntensity*(k_d*dotLN);
+    }
+
+    return lightIntensity*(k_d*dotLN+k_s*pow(dotRV,alpha));
+}
+
+
+vec3 phongIllumination(vec3 k_a,vec3 k_d,vec3 k_s,float alpha,vec3 p,vec3 eye){
+    const vec3 ambientLight=0.5*vec3(1.0,1.0,1.0);
+    vec3 color=ambientLight*k_a;
+
+    vec3 light1Pos=vec3(4.0,2.0,4.0);
+    vec3 light1Intensity=vec3(0.4,0.4,0.4);
+    color+=phongContribForLight(k_d,k_s,alpha,p,eye,light1Pos,light1Intensity);
+
+    vec3 light2Pos=vec3(2.0,2.0,2.0);
+    vec3 light2Intensity=vec3(0.4,0.4,0.4);
+    color+=phongContribForLight(k_d,k_s,alpha,p,eye,light2Pos,light2Intensity);
+
+    return color;
+
+}
+
 
 
 layout (location = 0) in vec2 inUV;
@@ -56,7 +112,14 @@ void main(){
         return;
     }
 
-    outColor=vec4(1.0,1.0,0.0,1.0);
+    vec3 p=eye+dist*dir;
+    vec3 k_a=vec3(0.2,0.2,0.2);
+    vec3 k_d=vec3(0.7,0.2,0.2);
+    vec3 k_s=vec3(1.0,1.0,1.0);
+    float shininess=10.0;
+    vec3 color=phongIllumination(k_a,k_d,k_s,shininess,p,eye);
+
+    outColor=vec4(color,1.0);
 }
 
 
